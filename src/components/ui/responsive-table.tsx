@@ -21,10 +21,10 @@ export interface TableColumn<T = any> {
   width?: number | string;
   align?: "left" | "center" | "right";
   sortable?: boolean;
-  hiddenOn?: "mobile" | "tablet" | "desktop";
+  hiddenOn?: "mobile" | "tablet" | "desktop" | string[];
+  colSpanMobile?: boolean;
   renderCell?: (value: any, row: T, column: TableColumn<T>) => React.ReactNode;
   renderHeader?: (column: TableColumn<T>) => React.ReactNode;
-  colSpanMobile?: number;
 }
 
 export interface SearchConfig {
@@ -36,13 +36,26 @@ export interface SearchConfig {
 
 export interface SortConfig {
   sortBy?: string;
-  sortDirection?: "asc" | "desc";
+  sortDir?: "asc" | "desc";
   onSortChange?: (sortBy: string, direction: "asc" | "desc") => void;
 }
 
 export interface ActionsConfig<T = any> {
-  perRow?: (row: T) => ActionItem[];
-  global?: ActionItem[];
+  perRow?: (row: T) => Array<{
+    key: string;
+    label: string;
+    icon?: React.ComponentType<any>;
+    intent?: "default" | "danger" | "success" | "warning";
+    onClick: () => void;
+    disabled?: boolean;
+    confirm?: {
+      title: string;
+      message: string;
+      confirmLabel?: string;
+      cancelLabel?: string;
+    };
+  }>;
+  global?: React.ReactNode;
 }
 
 export interface ResponsiveTableProps<T = any> {
@@ -110,11 +123,40 @@ const ResponsiveTable = <T extends Record<string, any>>({
     return typeof rowKey === "function" ? rowKey(row) : row[rowKey];
   };
 
+  const isColumnHidden = (column: TableColumn<T>) => {
+    if (!column.hiddenOn) return false;
+    
+    if (Array.isArray(column.hiddenOn)) {
+      return column.hiddenOn.some(breakpoint => {
+        if (breakpoint === 'sm') return isMobile;
+        if (breakpoint === 'mobile') return isMobile;
+        if (breakpoint === 'desktop') return !isMobile;
+        return false;
+      });
+    }
+    
+    if (column.hiddenOn === "mobile") return isMobile;
+    if (column.hiddenOn === "desktop") return !isMobile;
+    return false;
+  };
+
+  const handleActionClick = (action: any) => {
+    if (action.confirm) {
+      // Handle confirmation dialog
+      const confirmed = window.confirm(`${action.confirm.title}\n\n${action.confirm.message}`);
+      if (confirmed) {
+        action.onClick();
+      }
+    } else {
+      action.onClick();
+    }
+  };
+
   const handleSort = (columnKey: string) => {
     if (!sorting?.onSortChange) return;
 
     const newDirection =
-      sorting.sortBy === columnKey && sorting.sortDirection === "asc"
+      sorting.sortBy === columnKey && sorting.sortDir === "asc"
         ? "desc"
         : "asc";
 
@@ -123,7 +165,7 @@ const ResponsiveTable = <T extends Record<string, any>>({
 
   const getSortIcon = (columnKey: string) => {
     if (sorting?.sortBy !== columnKey) return null;
-    return sorting.sortDirection === "asc" ? (
+    return sorting.sortDir === "asc" ? (
       <ChevronUp className="h-4 w-4" />
     ) : (
       <ChevronDown className="h-4 w-4" />
@@ -140,11 +182,7 @@ const ResponsiveTable = <T extends Record<string, any>>({
     <thead className={cn("table-thead", stickyHeader && "table-thead-sticky")}>
       <tr>
         {columns.map((column) => {
-          const isHidden =
-            (column.hiddenOn === "mobile" && isMobile) ||
-            (column.hiddenOn === "desktop" && !isMobile);
-
-          if (isHidden) return null;
+          if (isColumnHidden(column)) return null;
 
           return (
             <th
@@ -191,11 +229,7 @@ const ResponsiveTable = <T extends Record<string, any>>({
         onClick={onRowClick ? () => onRowClick(row) : undefined}
       >
         {columns.map((column) => {
-          const isHidden =
-            (column.hiddenOn === "mobile" && isMobile) ||
-            (column.hiddenOn === "desktop" && !isMobile);
-
-          if (isHidden) return null;
+          if (isColumnHidden(column)) return null;
 
           const value = row[column.key];
 
@@ -219,7 +253,14 @@ const ResponsiveTable = <T extends Record<string, any>>({
           )}>
             {hasActions && (
               <ActionMenu
-                actions={actions.perRow(row)}
+                actions={actions.perRow(row).map(action => ({
+                  ...action,
+                  icon: action.icon ? <action.icon className="h-4 w-4" /> : undefined,
+                  onClick: () => handleActionClick(action),
+                  requiresConfirmation: !!action.confirm,
+                  confirmationTitle: action.confirm?.title,
+                  confirmationDescription: action.confirm?.message,
+                }))}
                 size="sm"
                 className="ml-auto"
               />
@@ -246,7 +287,7 @@ const ResponsiveTable = <T extends Record<string, any>>({
         <CardContent className="p-4">
           <div className="grid gap-3">
             {columns
-              .filter((column) => column.hiddenOn !== "mobile")
+              .filter((column) => !isColumnHidden(column))
               .map((column) => {
                 const value = row[column.key];
                 const content = column.renderCell
@@ -254,7 +295,10 @@ const ResponsiveTable = <T extends Record<string, any>>({
                   : value;
 
                 return (
-                  <div key={column.key} className="flex justify-between items-start">
+                  <div key={column.key} className={cn(
+                    "flex justify-between items-start",
+                    column.colSpanMobile && "col-span-full"
+                  )}>
                     <div className="text-sm font-medium text-muted-foreground min-w-0 mr-3">
                       {typeof column.header === "string"
                         ? column.header
@@ -269,7 +313,14 @@ const ResponsiveTable = <T extends Record<string, any>>({
             {hasActions && (
               <div className="flex justify-end pt-2 border-t">
                 <ActionMenu
-                  actions={actions.perRow(row)}
+                  actions={actions.perRow(row).map(action => ({
+                    ...action,
+                    icon: action.icon ? <action.icon className="h-4 w-4" /> : undefined,
+                    onClick: () => handleActionClick(action),
+                    requiresConfirmation: !!action.confirm,
+                    confirmationTitle: action.confirm?.title,
+                    confirmationDescription: action.confirm?.message,
+                  }))}
                   size="sm"
                 />
               </div>
@@ -354,18 +405,7 @@ const ResponsiveTable = <T extends Record<string, any>>({
           )}
           {actions?.global && (
             <div className="flex items-center gap-2">
-              {actions.global.map((action) => (
-                <Button
-                  key={action.key}
-                  variant={action.intent === "danger" ? "destructive" : "default"}
-                  size="sm"
-                  onClick={action.onClick}
-                  disabled={action.disabled}
-                >
-                  {action.icon && <span className="mr-2">{action.icon}</span>}
-                  {action.label}
-                </Button>
-              ))}
+              {actions.global}
             </div>
           )}
         </div>

@@ -142,7 +142,7 @@ const baseColumns = [
 const TableWithState = (args: any) => {
   const [searchValue, setSearchValue] = useState('');
   const [sortBy, setSortBy] = useState<string>('');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   const filteredData = sampleUsers.filter(user =>
     user.name.toLowerCase().includes(searchValue.toLowerCase()) ||
@@ -154,7 +154,7 @@ const TableWithState = (args: any) => {
     const aValue = a[sortBy as keyof typeof a];
     const bValue = b[sortBy as keyof typeof b];
     const result = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-    return sortDirection === 'desc' ? -result : result;
+    return sortDir === 'desc' ? -result : result;
   });
 
   return (
@@ -168,48 +168,47 @@ const TableWithState = (args: any) => {
       }}
       sorting={{
         sortBy,
-        sortDirection,
+        sortDir,
         onSortChange: (key, direction) => {
           setSortBy(key);
-          setSortDirection(direction);
+          setSortDir(direction);
         },
       }}
       actions={{
-        global: [
-          {
-            key: 'add',
-            label: 'Adicionar',
-            icon: <Plus className="h-4 w-4" />,
-            onClick: () => alert('Adicionar usuário'),
-          },
-          {
-            key: 'export',
-            label: 'Exportar',
-            icon: <Download className="h-4 w-4" />,
-            onClick: () => alert('Exportar dados'),
-          },
-        ],
+        global: (
+          <div className="flex gap-2">
+            <Button variant="default" size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar
+            </Button>
+            <Button variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              Exportar
+            </Button>
+          </div>
+        ),
         perRow: (row) => [
           {
             key: 'view',
             label: 'Visualizar',
-            icon: <Eye className="h-4 w-4" />,
+            icon: Eye,
             onClick: () => alert(`Visualizar ${row.name}`),
           },
           {
             key: 'edit',
             label: 'Editar',
-            icon: <Edit className="h-4 w-4" />,
+            icon: Edit,
             onClick: () => alert(`Editar ${row.name}`),
           },
           {
             key: 'delete',
             label: 'Excluir',
-            icon: <Trash2 className="h-4 w-4" />,
+            icon: Trash2,
             intent: 'danger' as const,
-            requiresConfirmation: true,
-            confirmationTitle: 'Excluir usuário',
-            confirmationDescription: `Tem certeza que deseja excluir ${row.name}? Esta ação não pode ser desfeita.`,
+            confirm: {
+              title: 'Excluir usuário',
+              message: `Tem certeza que deseja excluir ${row.name}? Esta ação não pode ser desfeita.`,
+            },
             onClick: () => alert(`Excluir ${row.name}`),
           },
         ],
