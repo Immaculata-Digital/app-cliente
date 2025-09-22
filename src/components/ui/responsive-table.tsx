@@ -253,14 +253,20 @@ const ResponsiveTable = <T extends Record<string, any>>({
           )}>
             {hasActions && (
               <ActionMenu
-                actions={actions.perRow(row).map(action => ({
-                  ...action,
-                  icon: action.icon ? <action.icon className="h-4 w-4" /> : undefined,
-                  onClick: () => handleActionClick(action),
-                  requiresConfirmation: !!action.confirm,
-                  confirmationTitle: action.confirm?.title,
-                  confirmationDescription: action.confirm?.message,
-                }))}
+                actions={actions.perRow(row).map(action => {
+                  const IconComponent = action.icon;
+                  return {
+                    key: action.key,
+                    label: action.label,
+                    icon: IconComponent ? <IconComponent className="h-4 w-4" /> : undefined,
+                    intent: action.intent,
+                    onClick: () => handleActionClick(action),
+                    disabled: action.disabled,
+                    requiresConfirmation: !!action.confirm,
+                    confirmationTitle: action.confirm?.title,
+                    confirmationDescription: action.confirm?.message,
+                  };
+                })}
                 size="sm"
                 className="ml-auto"
               />
@@ -313,14 +319,20 @@ const ResponsiveTable = <T extends Record<string, any>>({
             {hasActions && (
               <div className="flex justify-end pt-2 border-t">
                 <ActionMenu
-                  actions={actions.perRow(row).map(action => ({
-                    ...action,
-                    icon: action.icon ? <action.icon className="h-4 w-4" /> : undefined,
-                    onClick: () => handleActionClick(action),
-                    requiresConfirmation: !!action.confirm,
-                    confirmationTitle: action.confirm?.title,
-                    confirmationDescription: action.confirm?.message,
-                  }))}
+                  actions={actions.perRow(row).map(action => {
+                    const IconComponent = action.icon;
+                    return {
+                      key: action.key,
+                      label: action.label,
+                      icon: IconComponent ? <IconComponent className="h-4 w-4" /> : undefined,
+                      intent: action.intent,
+                      onClick: () => handleActionClick(action),
+                      disabled: action.disabled,
+                      requiresConfirmation: !!action.confirm,
+                      confirmationTitle: action.confirm?.title,
+                      confirmationDescription: action.confirm?.message,
+                    };
+                  })}
                   size="sm"
                 />
               </div>
