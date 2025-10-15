@@ -7,7 +7,7 @@ import { loginSchema, LoginFormData } from "@/schemas/auth.schema";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -184,20 +184,20 @@ const Login = () => {
             </div>
 
             {/* Lembrar-me */}
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="rememberMe"
-                checked={rememberMe}
-                onCheckedChange={(checked) => setValue("rememberMe", checked as boolean)}
-                disabled={isSubmitting}
-                aria-label="Lembrar de mim"
-              />
+            <div className="flex items-center justify-between">
               <Label
                 htmlFor="rememberMe"
                 className="text-sm text-foreground cursor-pointer select-none"
               >
                 Lembrar-me
               </Label>
+              <Switch
+                id="rememberMe"
+                checked={rememberMe}
+                onCheckedChange={(checked) => setValue("rememberMe", checked as boolean)}
+                disabled={isSubmitting}
+                aria-label="Lembrar de mim"
+              />
             </div>
 
             {/* Botão Entrar */}
