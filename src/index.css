@@ -2,96 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Navy Blue Design System - Todos os cores em HSL */
 @layer base {
   :root {
-    /* Navy Blue Core Palette */
-    --navy-50: 216 100% 97%;
-    --navy-100: 214 95% 93%;
-    --navy-200: 213 97% 87%;
-    --navy-300: 212 96% 78%;
-    --navy-400: 213 94% 68%;
-    --navy-500: 217 91% 60%;
-    --navy-600: 221 83% 53%;
-    --navy-700: 224 76% 48%;
-    --navy-800: 226 71% 40%;
-    --navy-900: 224 64% 33%;
-    --navy-950: 226 55% 21%;
-
-    /* Semantic Colors */
-    --background: var(--navy-50);
-    --foreground: var(--navy-950);
+    /* Colors */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
-    --card-foreground: var(--navy-950);
+    --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: var(--navy-950);
+    --popover-foreground: 222.2 84% 4.9%;
 
-    /* Primary: Navy Blue */
-    --primary: var(--navy-800);
-    --primary-foreground: 0 0% 100%;
-    --primary-hover: var(--navy-900);
-    --primary-light: var(--navy-600);
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --primary-light: 217.2 91.2% 59.8%;
+    --primary-dark: 224 67% 44%;
+    --primary-hover: 224 76% 48%;
 
-    /* Secondary: Lighter Navy */
-    --secondary: var(--navy-100);
-    --secondary-foreground: var(--navy-800);
-    --secondary-hover: var(--navy-200);
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary-hover: 210 40% 92%;
 
-    /* Accent: Bright Blue */
-    --accent: 197 92% 61%;
-    --accent-foreground: 0 0% 100%;
-    --accent-light: 197 100% 85%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    /* Success: Green */
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
-    --success-light: 142 69% 58%;
-    --success-bg: 142 76% 96%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
 
-    /* Warning: Orange */
-    --warning: 32 95% 44%;
-    --warning-foreground: 0 0% 100%;
-    --warning-light: 32 100% 70%;
-    --warning-bg: 32 100% 96%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
 
-    /* Destructive: Red */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --destructive-light: 0 93% 73%;
-    --destructive-bg: 0 93% 97%;
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 355.7 100% 97.3%;
 
-    /* Neutral Grays */
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
-    --muted-dark: 215 25% 27%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
 
-    /* Interactive Elements */
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: var(--primary);
-
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
-    --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent-light)));
-    --gradient-success: linear-gradient(135deg, hsl(var(--success)), hsl(var(--success-light)));
-    --gradient-hero: linear-gradient(135deg, hsl(var(--navy-900)), hsl(var(--navy-700)), hsl(var(--accent)));
-
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(var(--navy-900) / 0.05);
-    --shadow: 0 1px 3px 0 hsl(var(--navy-900) / 0.1), 0 1px 2px -1px hsl(var(--navy-900) / 0.1);
-    --shadow-md: 0 4px 6px -1px hsl(var(--navy-900) / 0.1), 0 2px 4px -2px hsl(var(--navy-900) / 0.1);
-    --shadow-lg: 0 10px 15px -3px hsl(var(--navy-900) / 0.1), 0 4px 6px -4px hsl(var(--navy-900) / 0.1);
-    --shadow-xl: 0 20px 25px -5px hsl(var(--navy-900) / 0.1), 0 8px 10px -6px hsl(var(--navy-900) / 0.1);
-    --shadow-glow: 0 0 20px hsl(var(--accent) / 0.3);
-
-    /* Animations */
-    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
-
-    --radius: 0.75rem;
-
-    /* Sidebar */
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -103,24 +50,39 @@
   }
 
   .dark {
-    --background: var(--navy-950);
-    --foreground: var(--navy-50);
-    --card: var(--navy-900);
-    --card-foreground: var(--navy-50);
-    --popover: var(--navy-900);
-    --popover-foreground: var(--navy-50);
-    --primary: var(--navy-600);
-    --primary-foreground: var(--navy-950);
-    --primary-hover: var(--navy-500);
-    --secondary: var(--navy-800);
-    --secondary-foreground: var(--navy-100);
-    --muted: var(--navy-800);
-    --muted-foreground: var(--navy-300);
-    --border: var(--navy-800);
-    --input: var(--navy-800);
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
-    --shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.4), 0 1px 2px -1px hsl(0 0% 0% / 0.4);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.4);
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary-light: 221.2 83.2% 68%;
+    --primary-dark: 217.2 91.2% 45%;
+    --primary-hover: 217.2 91.2% 55%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --secondary-hover: 217.2 32.6% 20%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --success: 142.1 70.6% 45.3%;
+    --success-foreground: 144.9 80.4% 10%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
