@@ -4,6 +4,7 @@ import { User, AuthTokens } from "@/types/permissions";
 import { authService } from "@/services/api-usuarios";
 import { apiClient } from "@/services/api-client/api-client.instance";
 import { setupInterceptors } from "@/services/api-client/interceptors";
+import { validateMockCredentials, MOCK_USER, MOCK_TOKENS } from "@/utils/mock-auth";
 
 type AuthContextType = {
   user: User | null;
@@ -48,6 +49,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const accessToken = Cookies.get("access_token");
       
       if (accessToken) {
+        // Se for token mockado, usar dados mockados
+        if (accessToken.startsWith("mock-access-token")) {
+          console.log("🔑 Sessão mockada detectada");
+          setUser(MOCK_USER as any);
+          setIsLoading(false);
+          return;
+        }
+
+        // Sistema real
         try {
           const userData = await authService.getCurrentUser();
           setUser(userData);
@@ -64,21 +74,47 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, []);
 
   const login = async (login: string, password: string) => {
-    const response = await authService.login(login, password);
-    
-    Cookies.set("access_token", response.tokens.access, {
-      expires: 1, // 1 day
-      secure: true,
-      sameSite: "strict",
-    });
-    
-    Cookies.set("refresh_token", response.tokens.refresh, {
-      expires: 7, // 7 days
-      secure: true,
-      sameSite: "strict",
-    });
-    
-    setUser(response.user);
+    // MOCK AUTH - Sistema temporário para desenvolvimento
+    if (validateMockCredentials(login, password)) {
+      console.log("🔑 Usando credenciais mockadas para desenvolvimento");
+      
+      Cookies.set("access_token", MOCK_TOKENS.accessToken, {
+        expires: 1,
+        secure: true,
+        sameSite: "strict",
+      });
+      
+      Cookies.set("refresh_token", MOCK_TOKENS.refreshToken, {
+        expires: 7,
+        secure: true,
+        sameSite: "strict",
+      });
+      
+      setUser(MOCK_USER as any);
+      return;
+    }
+
+    // Sistema de autenticação real (API externa)
+    try {
+      const response = await authService.login(login, password);
+      
+      Cookies.set("access_token", response.tokens.access, {
+        expires: 1,
+        secure: true,
+        sameSite: "strict",
+      });
+      
+      Cookies.set("refresh_token", response.tokens.refresh, {
+        expires: 7,
+        secure: true,
+        sameSite: "strict",
+      });
+      
+      setUser(response.user);
+    } catch (error) {
+      console.error("Erro no login:", error);
+      throw error;
+    }
   };
 
   const logout = () => {
@@ -90,9 +126,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const hasPermission = (permission: string): boolean => {
     if (!user) return false;
 
-    const userPermissions = user.grupos.flatMap(grupo => 
+    // Mock user tem todas as permissões
+    if (user.email === "admin@appclientes.com") {
+      return true;
+    }
+
+    const userPermissions = user.grupos?.flatMap(grupo => 
       grupo.permissoes.map(p => p.nome)
-    );
+    ) || [];
 
     return userPermissions.includes(permission);
   };

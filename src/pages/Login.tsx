@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, LogIn, Loader2 } from "lucide-react";
+import { Eye, EyeOff, LogIn, Loader2, Key, Copy } from "lucide-react";
 import { loginSchema, LoginFormData } from "@/schemas/auth.schema";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { MOCK_CREDENTIALS } from "@/utils/mock-auth";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -224,6 +225,62 @@ const Login = () => {
               </Link>
             </div>
           </form>
+
+          {/* Card de Acesso Temporário */}
+          <div className="p-6 bg-muted/30 border-t border-border">
+            <div className="flex items-center gap-2 mb-3">
+              <Key className="h-4 w-4 text-muted-foreground" />
+              <h3 className="text-sm font-semibold text-foreground">
+                Acesso Temporário (Desenvolvimento)
+              </h3>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center justify-between bg-background/50 p-2 rounded">
+                <div>
+                  <span className="text-muted-foreground">Login: </span>
+                  <span className="font-mono text-foreground">{MOCK_CREDENTIALS.login}</span>
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    navigator.clipboard.writeText(MOCK_CREDENTIALS.login);
+                    toast({ description: "Login copiado!" });
+                  }}
+                >
+                  <Copy className="h-3 w-3" />
+                </Button>
+              </div>
+              <div className="flex items-center justify-between bg-background/50 p-2 rounded">
+                <div>
+                  <span className="text-muted-foreground">Senha: </span>
+                  <span className="font-mono text-foreground">{MOCK_CREDENTIALS.password}</span>
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    navigator.clipboard.writeText(MOCK_CREDENTIALS.password);
+                    toast({ description: "Senha copiada!" });
+                  }}
+                >
+                  <Copy className="h-3 w-3" />
+                </Button>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full mt-3"
+                onClick={() => {
+                  setValue("login", MOCK_CREDENTIALS.login);
+                  setValue("password", MOCK_CREDENTIALS.password);
+                  toast({ description: "Credenciais preenchidas!" });
+                }}
+              >
+                Preencher automaticamente
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* Footer */}
