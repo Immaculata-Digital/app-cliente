@@ -2,8 +2,8 @@ import { apiClient } from "../api-client/api-client.instance";
 import { AuthResponse, User } from "@/types/permissions";
 
 export const authService = {
-  login: async (email: string, password: string): Promise<AuthResponse> => {
-    return apiClient.post("/auth/login/", { email, password });
+  login: async (login: string, password: string): Promise<AuthResponse> => {
+    return apiClient.post("/auth/login/", { login, password });
   },
 
   getCurrentUser: async (): Promise<User> => {

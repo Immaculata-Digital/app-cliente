@@ -9,7 +9,7 @@ type AuthContextType = {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (login: string, password: string) => Promise<void>;
   logout: () => void;
   hasPermission: (permission: string) => boolean;
 };
@@ -63,8 +63,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     initAuth();
   }, []);
 
-  const login = async (email: string, password: string) => {
-    const response = await authService.login(email, password);
+  const login = async (login: string, password: string) => {
+    const response = await authService.login(login, password);
     
     Cookies.set("access_token", response.tokens.access, {
       expires: 1, // 1 day
