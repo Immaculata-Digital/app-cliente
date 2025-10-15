@@ -4,7 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { forgotPasswordSchema, ForgotPasswordFormData } from "@/schemas/password.schema";
 import { passwordService } from "@/services/api-usuarios";
-import { Button } from "@/components/ds/Button";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ds/Input";
 import {
   Card,
@@ -104,10 +105,10 @@ const ForgotPassword = () => {
             <Button
               type="submit"
               className="w-full"
-              loading={isLoading}
-              variant="gradient"
+              disabled={isLoading}
             >
-              <Mail className="mr-2 h-4 w-4" />
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {!isLoading && <Mail className="mr-2 h-4 w-4" />}
               Enviar link de redefinição
             </Button>
             <Button asChild variant="ghost" className="w-full">
