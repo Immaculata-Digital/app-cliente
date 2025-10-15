@@ -10,6 +10,7 @@ const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const UserProfile = lazy(() => import("@/pages/UserProfile"));
+const ClientArea = lazy(() => import("@/pages/ClientArea"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const LoadingFallback = () => (
@@ -44,6 +45,16 @@ export const AppRoutes = () => {
             <ProtectedRoute>
               <PageErrorBoundary>
                 <UserProfile />
+              </PageErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/client-area"
+          element={
+            <ProtectedRoute>
+              <PageErrorBoundary>
+                <ClientArea />
               </PageErrorBoundary>
             </ProtectedRoute>
           }
