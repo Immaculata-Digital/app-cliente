@@ -6,11 +6,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 
+// Schema tenant padrão (multi-tenant)
+const TENANT_SCHEMA = "z_demo";
+
 // Dados mockados
 const MOCK_CLIENTE = {
   id_cliente: "CLT001234",
   nome: "João Silva",
   saldo_pontos: 1250,
+  schema: TENANT_SCHEMA,
 };
 
 const MOCK_ITEMS = [
@@ -54,6 +58,15 @@ const ClientArea = () => {
     setResgatePendente(true);
     
     // Simular chamada API
+    // POST /clientes/:schema/:id_cliente/pedidos-resgate
+    // Body: { id_item_recompensa, tipo: "PEQUENO", origem: "RESGATE" }
+    // Schema: TENANT_SCHEMA (z_demo)
+    console.log(`[Mock API] POST /clientes/${TENANT_SCHEMA}/${MOCK_CLIENTE.id_cliente}/pedidos-resgate`, {
+      id_item_recompensa: itemSelecionado.id,
+      tipo: itemSelecionado.tipo,
+      origem: "RESGATE"
+    });
+
     setTimeout(() => {
       setModalAberto(null);
       setResgatePendente(false);
