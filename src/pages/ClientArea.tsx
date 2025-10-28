@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Gift, Plus, Copy, X } from "lucide-react";
+import { Gift, Plus, Copy, X, LogOut, User } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Schema tenant padrão (multi-tenant)
 const TENANT_SCHEMA = "z_demo";
@@ -29,6 +30,7 @@ type ModalContext = "resgate" | "somar-pontos";
 
 const ClientArea = () => {
   const { toast } = useToast();
+  const { user, logout } = useAuth();
   const [modalAberto, setModalAberto] = useState<ModalType>(null);
   const [contextoModal, setContextoModal] = useState<ModalContext>("resgate");
   const [itemSelecionado, setItemSelecionado] = useState<typeof MOCK_ITEMS[0] | null>(null);
@@ -83,14 +85,27 @@ const ClientArea = () => {
 
   return (
     <div className="min-h-screen bg-gradient-light">
-      {/* Header */}
-      <header className="bg-gradient-primary p-6 text-center">
-        <h1 className="text-2xl font-bold text-primary-foreground">
-          Área do Cliente
-        </h1>
-        <p className="text-primary-foreground/90 mt-1">
-          Olá, {MOCK_CLIENTE.nome}!
-        </p>
+      {/* Header com Logout */}
+      <header className="bg-gradient-primary p-6">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <div className="text-center flex-1">
+            <h1 className="text-2xl font-bold text-primary-foreground">
+              Área do Cliente
+            </h1>
+            <p className="text-primary-foreground/90 mt-1">
+              Olá, {user?.nome || MOCK_CLIENTE.nome}!
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={logout}
+            className="text-primary-foreground hover:bg-primary-foreground/10"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Sair
+          </Button>
+        </div>
       </header>
 
       <div className="max-w-4xl mx-auto p-6 space-y-6">

@@ -8,8 +8,6 @@ import PageErrorBoundary from "@/components/PageErrorBoundary";
 const Login = lazy(() => import("@/pages/Login"));
 const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
-const Dashboard = lazy(() => import("@/pages/Dashboard"));
-const UserProfile = lazy(() => import("@/pages/UserProfile"));
 const ClientArea = lazy(() => import("@/pages/ClientArea"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
@@ -30,26 +28,6 @@ export const AppRoutes = () => {
 
         {/* Protected routes */}
         <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <PageErrorBoundary>
-                <Dashboard />
-              </PageErrorBoundary>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <PageErrorBoundary>
-                <UserProfile />
-              </PageErrorBoundary>
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="/client-area"
           element={
             <ProtectedRoute>
@@ -61,7 +39,7 @@ export const AppRoutes = () => {
         />
 
         {/* Redirects */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<Navigate to="/client-area" replace />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
