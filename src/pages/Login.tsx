@@ -17,7 +17,7 @@ import { MOCK_CREDENTIALS } from "@/utils/mock-auth";
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,13 +37,13 @@ const Login = () => {
 
   const rememberMe = watch("rememberMe");
 
-  // Redireciona se já autenticado
   useEffect(() => {
-    if (isAuthenticated) {
-      const intendedRoute = (location.state as any)?.from?.pathname || "/dashboard";
-      navigate(intendedRoute, { replace: true });
+    if (!isLoading) {
+      if (isAuthenticated) {
+        navigate("/", { replace: true });
+      }
     }
-  }, [isAuthenticated, navigate, location]);
+  }, [isAuthenticated, isLoading, navigate]);
 
   const onSubmit = async (data: LoginFormData) => {
     setIsSubmitting(true);
@@ -56,8 +56,7 @@ const Login = () => {
         description: "Login realizado com sucesso.",
       });
 
-      const intendedRoute = (location.state as any)?.from?.pathname || "/dashboard";
-      navigate(intendedRoute, { replace: true });
+      navigate("/", { replace: true });
     } catch (error: unknown) {
       let title = "Erro no login";
       let description = "Ocorreu um erro. Tente novamente.";

@@ -9,7 +9,6 @@ const Login = lazy(() => import("@/pages/Login"));
 const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const ClientArea = lazy(() => import("@/pages/ClientArea"));
-const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const LoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -26,9 +25,9 @@ export const AppRoutes = () => {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Protected routes */}
+        {/* Main route - Client Area */}
         <Route
-          path="/client-area"
+          path="/"
           element={
             <ProtectedRoute>
               <PageErrorBoundary>
@@ -38,9 +37,8 @@ export const AppRoutes = () => {
           }
         />
 
-        {/* Redirects */}
-        <Route path="/" element={<Navigate to="/client-area" replace />} />
-        <Route path="*" element={<NotFound />} />
+        {/* Redirect all unknown routes to home */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
   );

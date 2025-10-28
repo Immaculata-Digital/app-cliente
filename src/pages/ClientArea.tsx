@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Gift, Plus, Copy, X, LogOut, User } from "lucide-react";
+import { Gift, Plus, Copy, X, LogOut, User, QrCode } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import QRCodeComponent from "react-qr-code";
 
 // Schema tenant padrão (multi-tenant)
 const TENANT_SCHEMA = "z_demo";
@@ -35,6 +36,7 @@ const ClientArea = () => {
   const [contextoModal, setContextoModal] = useState<ModalContext>("resgate");
   const [itemSelecionado, setItemSelecionado] = useState<typeof MOCK_ITEMS[0] | null>(null);
   const [resgatePendente, setResgatePendente] = useState(false);
+  const [showQR, setShowQR] = useState(false);
 
   const copiarCodigo = () => {
     navigator.clipboard.writeText(MOCK_CLIENTE.id_cliente);
@@ -202,7 +204,10 @@ const ClientArea = () => {
       </div>
 
       {/* Modal: Mostrar Código */}
-      <Dialog open={modalAberto === "codigo"} onOpenChange={() => setModalAberto(null)}>
+      <Dialog open={modalAberto === "codigo"} onOpenChange={() => {
+        setModalAberto(null);
+        setShowQR(false);
+      }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Meu Código</DialogTitle>
@@ -213,30 +218,55 @@ const ClientArea = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col items-center justify-center py-8 space-y-6">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-2">Código do Cliente</p>
-              <p className="text-5xl font-mono font-bold text-foreground tracking-wider">
-                {MOCK_CLIENTE.id_cliente}
-              </p>
-            </div>
+            {showQR ? (
+              <div className="bg-white p-4 rounded-lg">
+                <QRCodeComponent
+                  value={MOCK_CLIENTE.id_cliente}
+                  size={200}
+                  level="H"
+                />
+              </div>
+            ) : (
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-2">Código do Cliente</p>
+                <p className="text-5xl font-mono font-bold text-foreground tracking-wider">
+                  {MOCK_CLIENTE.id_cliente}
+                </p>
+              </div>
+            )}
+            
             <div className="flex gap-2 w-full">
               <Button
                 variant="outline"
                 className="flex-1"
-                onClick={copiarCodigo}
+                onClick={() => setShowQR(!showQR)}
               >
-                <Copy className="h-4 w-4 mr-2" />
-                Copiar Código
+                <QrCode className="h-4 w-4 mr-2" />
+                {showQR ? "Mostrar Código" : "Exibir QR Code"}
               </Button>
-              <Button
-                variant="secondary"
-                className="flex-1"
-                onClick={() => setModalAberto(null)}
-              >
-                <X className="h-4 w-4 mr-2" />
-                Fechar
-              </Button>
+              {!showQR && (
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={copiarCodigo}
+                >
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copiar Código
+                </Button>
+              )}
             </div>
+            
+            <Button
+              variant="secondary"
+              className="w-full"
+              onClick={() => {
+                setModalAberto(null);
+                setShowQR(false);
+              }}
+            >
+              <X className="h-4 w-4 mr-2" />
+              Fechar
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
