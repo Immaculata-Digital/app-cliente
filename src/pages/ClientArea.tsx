@@ -89,24 +89,29 @@ const ClientArea = () => {
     <div className="min-h-screen bg-gradient-light">
       {/* Header com Logout */}
       <header className="bg-gradient-primary p-6">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="text-center flex-1">
+        <div className="max-w-4xl mx-auto grid grid-cols-3 items-center">
+          {/* Primeira coluna vazia para balanceamento */}
+          <div></div>
+          
+          {/* Segunda coluna - Título centralizado */}
+          <div className="text-center">
             <h1 className="text-2xl font-bold text-primary-foreground">
-              Área do Cliente
+              Olá, {user?.nome || MOCK_CLIENTE.nome}
             </h1>
-            <p className="text-primary-foreground/90 mt-1">
-              Olá, {user?.nome || MOCK_CLIENTE.nome}!
-            </p>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={logout}
-            className="text-primary-foreground hover:bg-primary-foreground/10"
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Sair
-          </Button>
+          
+          {/* Terceira coluna - Botão alinhado à direita */}
+          <div className="flex justify-end">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={logout}
+              className="text-primary-foreground hover:bg-primary-foreground/10"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sair
+            </Button>
+          </div>
         </div>
       </header>
 
