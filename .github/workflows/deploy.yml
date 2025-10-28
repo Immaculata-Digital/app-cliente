@@ -39,10 +39,10 @@ jobs:
             docker rm app-clientes || true
             docker run -d \
               --name app-clientes \
-              -p 7000:7000 \
-              -e VITE_API_USUARIOS_URL="${{ secrets.API_USUARIOS_URL }}" \
-              -e VITE_API_ADMIN_URL="${{ secrets.API_ADMIN_URL }}" \
-              -e VITE_API_CLIENTES_URL="${{ secrets.API_CLIENTES_URL }}" \
+              -p 7001:7001 \
+              -e API_USUARIOS_URL="${{ secrets.API_USUARIOS_URL }}" \
+              -e API_ADMIN_URL="${{ secrets.API_ADMIN_URL }}" \
+              -e API_CLIENTES_URL="${{ secrets.API_CLIENTES_URL }}" \
               --restart unless-stopped \
               app-clientes
             docker image prune -f
