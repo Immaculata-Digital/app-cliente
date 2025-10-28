@@ -1,4 +1,4 @@
-import { Home, Users, Settings, LayoutDashboard } from "lucide-react";
+import { Home, Users, Settings, LayoutDashboard, Gift } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -16,6 +16,11 @@ const menuItems = [
     title: "Dashboard",
     url: "/dashboard",
     icon: LayoutDashboard,
+  },
+  {
+    title: "Área do Cliente",
+    url: "/client-area",
+    icon: Gift,
   },
   {
     title: "Clientes",

@@ -1,9 +1,13 @@
-import { Users, DollarSign, TrendingUp, BarChart3 } from "lucide-react";
+import { Users, DollarSign, TrendingUp, BarChart3, Gift } from "lucide-react";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { SimpleTable } from "@/components/dashboard/SimpleTable";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ds/Button";
+import { useNavigate } from "react-router-dom";
+import { Card } from "@/components/ui/card";
 
 const DashboardHome = () => {
+  const navigate = useNavigate();
   const recentClients = [
     {
       id: 1,
@@ -75,12 +79,39 @@ const DashboardHome = () => {
         />
       </div>
 
-      <div>
+      <div className="grid gap-6 md:grid-cols-2">
         <SimpleTable
           title="Clientes Recentes"
           data={recentClients}
           columns={columns}
         />
+
+        <Card className="p-6 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 bg-primary/10 rounded-lg">
+                <Gift className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Área do Cliente</h3>
+                <p className="text-sm text-muted-foreground">
+                  Resgate de prêmios e pontos
+                </p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground mb-6">
+              Acesse a área do cliente para visualizar o catálogo de recompensas, 
+              resgatar prêmios e somar pontos na loja.
+            </p>
+          </div>
+          <Button
+            variant="primary"
+            onClick={() => navigate("/client-area")}
+            className="w-full"
+          >
+            Acessar Área do Cliente
+          </Button>
+        </Card>
       </div>
     </div>
   );

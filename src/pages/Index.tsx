@@ -10,7 +10,7 @@ const Index = () => {
   useEffect(() => {
     if (!isLoading) {
       if (isAuthenticated) {
-        navigate("/dashboard", { replace: true });
+        navigate("/client-area", { replace: true });
       } else {
         navigate("/login", { replace: true });
       }
