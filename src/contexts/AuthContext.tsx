@@ -194,17 +194,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             scheduleRefresh(parseInt(expiresIn));
           }
           setIsLoading(false);
-        } else if (import.meta.env.DEV) {
-          // Em modo desenvolvimento, faz login automático
-          console.log('[Auth] Modo desenvolvimento - fazendo login automático...');
-          try {
-            await performLogin(MOCK_CREDENTIALS.login, MOCK_CREDENTIALS.password, false);
-            console.log('[Auth] Login automático realizado com sucesso');
-          } catch (error) {
-            console.error('[Auth] Erro no login automático:', error);
-          } finally {
-            setIsLoading(false);
-          }
         } else {
           setIsLoading(false);
         }

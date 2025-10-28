@@ -18,12 +18,39 @@ interface MockUser {
 
 /**
  * Usuário padrão para desenvolvimento
- * Login: thiago.lamberti
- * Senha: Thiago@25
+ * Login: admin@appclientes.com / Senha: Admin@2025
+ * Login: thiago.lamberti / Senha: Thiago@25
  */
 const MOCK_USERS: MockUser[] = [
   {
     id: 1,
+    login: "admin@appclientes.com",
+    senha: "Admin@2025",
+    email: "admin@appclientes.com",
+    grupo: "Administrador Demo",
+    nome: "Administrador Demo",
+    menus: [
+      { id_menu: 1, titulo: "Dashboard", chave: "DASHBOARD", url: "/dashboard", icone: "layout-dashboard", ordem: 1, dt_cadastro: "2024-01-15T10:30:00Z", usu_cadastro: 1, ativo: true },
+      { id_menu: 2, titulo: "Gestão de Clientes", chave: "GESTAO-CLIENTES", url: "/clientes", icone: "user-check", ordem: 2, dt_cadastro: "2024-01-15T10:30:00Z", usu_cadastro: 1, ativo: true },
+      { id_menu: 3, titulo: "Itens de Recompensa", chave: "ITENS-RECOMPENSA", url: "/itens-recompensa", icone: "gift", ordem: 3, dt_cadastro: "2024-01-15T10:30:00Z", usu_cadastro: 1, ativo: true },
+      { id_menu: 4, titulo: "Lojas", chave: "LOJAS", url: "/lojas", icone: "store", ordem: 4, dt_cadastro: "2024-01-15T10:30:00Z", usu_cadastro: 1, ativo: true },
+      { id_menu: 5, titulo: "Gestão de Usuários", chave: "GESTAO-USUARIOS", url: "/usuarios", icone: "users", ordem: 5, dt_cadastro: "2024-01-15T10:30:00Z", usu_cadastro: 1, ativo: true },
+      { id_menu: 6, titulo: "Permissões e Grupos", chave: "PERMISSOES-GRUPOS", url: "/grupos-funcionalidades", icone: "shield-check", ordem: 6, dt_cadastro: "2024-01-15T10:30:00Z", usu_cadastro: 1, ativo: true },
+      { id_menu: 7, titulo: "Gestão de Funcionalidades", chave: "GESTAO-FUNCIONALIDADES", url: "/funcionalidades", icone: "link-2", ordem: 7, dt_cadastro: "2024-01-15T10:30:00Z", usu_cadastro: 1, ativo: true },
+      { id_menu: 8, titulo: "Configurações", chave: "CONFIGURACOES", url: "/configuracoes", icone: "settings", ordem: 8, dt_cadastro: "2024-01-15T10:30:00Z", usu_cadastro: 1, ativo: true },
+    ],
+    funcionalidades: [
+      { chave: "GESTAO-USUARIOS" },
+      { chave: "GESTAO-CLIENTES" },
+      { chave: "ITENS-RECOMPENSA" },
+      { chave: "CONFIGURACOES" },
+      { chave: "LOJAS" },
+      { chave: "PERMISSOES-GRUPOS" },
+      { chave: "GESTAO-FUNCIONALIDADES" },
+    ],
+  },
+  {
+    id: 2,
     login: "thiago.lamberti",
     senha: "Thiago@25",
     email: "thiago.lamberti@immaculatadigital.com.br",
@@ -89,9 +116,9 @@ class AuthMock {
         email: mockUser.email,
         grupo: mockUser.grupo,
         nome: mockUser.nome,
-        menus: mockUser.menus,
-        funcionalidades: mockUser.funcionalidades,
       },
+      menus: mockUser.menus,
+      permissions: mockUser.funcionalidades,
       access_token: `mock_token_${mockUser.id}_${Date.now()}`,
       access_expires_in: "900", // 15 minutos
       refresh_token: `mock_refresh_${mockUser.id}_${Date.now()}`,
