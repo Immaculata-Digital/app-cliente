@@ -2,21 +2,22 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, LogIn, Loader2, Key, Copy } from "lucide-react";
+import { Eye, EyeOff, LogIn, Loader2, Key, Copy, Info } from "lucide-react";
 import { loginSchema, LoginFormData } from "@/schemas/auth.schema";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ds/Button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { PasswordInput } from "@/components/ds/PasswordInput";
 import { cn } from "@/lib/utils";
 import { MOCK_CREDENTIALS } from "@/utils/mock-auth";
 
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, user } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,17 +39,17 @@ const Login = () => {
 
   // Redireciona se já autenticado
   useEffect(() => {
-    if (user) {
+    if (isAuthenticated) {
       const intendedRoute = (location.state as any)?.from?.pathname || "/dashboard";
       navigate(intendedRoute, { replace: true });
     }
-  }, [user, navigate, location]);
+  }, [isAuthenticated, navigate, location]);
 
   const onSubmit = async (data: LoginFormData) => {
     setIsSubmitting(true);
 
     try {
-      await login(data.login, data.password);
+      await login(data.login, data.password, data.rememberMe);
 
       toast({
         title: "Bem-vindo(a)!",
@@ -57,20 +58,20 @@ const Login = () => {
 
       const intendedRoute = (location.state as any)?.from?.pathname || "/dashboard";
       navigate(intendedRoute, { replace: true });
-    } catch (error: any) {
+    } catch (error: unknown) {
       let title = "Erro no login";
       let description = "Ocorreu um erro. Tente novamente.";
 
-      if (error.message === "LOGIN_INVALID") {
+      if (error instanceof Error && error.message === "LOGIN_INVALID") {
         title = "Credenciais inválidas";
         description = "Login ou senha inválidos.";
-      } else if (error.message === "USER_BLOCKED") {
+      } else if (error instanceof Error && error.message === "USER_BLOCKED") {
         title = "Usuário bloqueado";
         description = "Usuário bloqueado. Procure o administrador.";
-      } else if (error.message === "RATE_LIMIT") {
+      } else if (error instanceof Error && error.message === "RATE_LIMIT") {
         title = "Muitas tentativas";
         description = "Muitas tentativas. Tente novamente mais tarde.";
-      } else if (error.message === "NETWORK_ERROR") {
+      } else if (error instanceof Error && error.message === "NETWORK_ERROR") {
         title = "Sem conexão";
         description = "Sem conexão. Verifique sua internet.";
       }
@@ -93,10 +94,10 @@ const Login = () => {
           {/* Header com gradiente */}
           <div className="bg-gradient-primary p-8 text-center">
             <h1 className="text-3xl font-bold text-primary-foreground mb-2">
-              App Clientes
+              Sistema de Fidelidade
             </h1>
             <p className="text-primary-foreground/90">
-              Acesso ao sistema de gestão
+              Acesso aos seus pontos
             </p>
           </div>
 
@@ -139,39 +140,15 @@ const Login = () => {
               <Label htmlFor="password" className="text-foreground">
                 Senha
               </Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                  aria-invalid={!!errors.password}
-                  aria-describedby={errors.password ? "password-error" : undefined}
-                  {...register("password")}
-                  disabled={isSubmitting}
-                  className="pr-12"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className={cn(
-                    "absolute right-3 top-1/2 -translate-y-1/2",
-                    "text-muted-foreground hover:text-foreground",
-                    "focus:outline-none focus:ring-2 focus:ring-ring rounded-md p-1",
-                    "transition-colors"
-                  )}
-                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                  aria-pressed={showPassword}
-                  disabled={isSubmitting}
-                  tabIndex={0}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
-                </button>
-              </div>
+              <PasswordInput
+                id="password"
+                placeholder="••••••••"
+                autoComplete="current-password"
+                aria-invalid={!!errors.password}
+                aria-describedby={errors.password ? "password-error" : undefined}
+                {...register("password")}
+                disabled={isSubmitting}
+              />
               {errors.password && (
                 <p
                   id="password-error"
@@ -204,14 +181,19 @@ const Login = () => {
             {/* Botão Entrar */}
             <Button
               type="submit"
+              variant="primary"
+              size="md"
               className="w-full"
+              isLoading={isSubmitting}
               disabled={isSubmitting}
+              leftIcon={
+                isSubmitting ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <LogIn className="h-5 w-5" />
+                )
+              }
             >
-              {isSubmitting ? (
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              ) : (
-                <LogIn className="mr-2 h-5 w-5" />
-              )}
               {isSubmitting ? "Entrando..." : "Entrar"}
             </Button>
 
@@ -225,60 +207,24 @@ const Login = () => {
               </Link>
             </div>
           </form>
+        </div>
 
-          {/* Card de Acesso Temporário */}
-          <div className="p-6 bg-muted/30 border-t border-border">
-            <div className="flex items-center gap-2 mb-3">
-              <Key className="h-4 w-4 text-muted-foreground" />
-              <h3 className="text-sm font-semibold text-foreground">
-                Acesso Temporário (Desenvolvimento)
-              </h3>
-            </div>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between bg-background/50 p-2 rounded">
-                <div>
-                  <span className="text-muted-foreground">Login: </span>
-                  <span className="font-mono text-foreground">{MOCK_CREDENTIALS.login}</span>
+        {/* Info de usuário de teste */}
+        <div className="mt-6 bg-muted/50 rounded-lg p-4 border border-border">
+          <div className="flex items-start gap-2">
+            <Info className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-foreground mb-2">
+                Usuário de teste:
+              </p>
+              <div className="space-y-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <code className="bg-background px-2 py-1 rounded border border-border">
+                    {MOCK_CREDENTIALS.login}
+                  </code>
                 </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    navigator.clipboard.writeText(MOCK_CREDENTIALS.login);
-                    toast({ description: "Login copiado!" });
-                  }}
-                >
-                  <Copy className="h-3 w-3" />
-                </Button>
+                <p className="mt-2">Senha: <code className="bg-background px-2 py-1 rounded border border-border">{MOCK_CREDENTIALS.password}</code></p>
               </div>
-              <div className="flex items-center justify-between bg-background/50 p-2 rounded">
-                <div>
-                  <span className="text-muted-foreground">Senha: </span>
-                  <span className="font-mono text-foreground">{MOCK_CREDENTIALS.password}</span>
-                </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    navigator.clipboard.writeText(MOCK_CREDENTIALS.password);
-                    toast({ description: "Senha copiada!" });
-                  }}
-                >
-                  <Copy className="h-3 w-3" />
-                </Button>
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                className="w-full mt-3"
-                onClick={() => {
-                  setValue("login", MOCK_CREDENTIALS.login);
-                  setValue("password", MOCK_CREDENTIALS.password);
-                  toast({ description: "Credenciais preenchidas!" });
-                }}
-              >
-                Preencher automaticamente
-              </Button>
             </div>
           </div>
         </div>

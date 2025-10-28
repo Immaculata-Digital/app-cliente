@@ -1,5 +1,10 @@
-import { HttpClientFactory } from "./http-client.factory";
+/**
+ * API Client Instance (Admin)
+ * 
+ * @deprecated Use `createHttpClient` from `http-client.factory.ts` instead
+ * Mantido para compatibilidade, mas recomenda-se usar a factory
+ */
 
-const API_BASE_URL = import.meta.env.VITE_API_USUARIOS_URL || "http://localhost:8000/api";
-
-export const apiClient = HttpClientFactory.create(API_BASE_URL);
+export { apiClientAdmin } from './http-client.factory';
+export { HttpClient } from './http-client';
+export type { RequestConfig, ApiResponse, PaginatedResponse } from './http-client';

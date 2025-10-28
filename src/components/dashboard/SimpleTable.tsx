@@ -1,70 +1,87 @@
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { TableCard } from "@/components/ds/TableCard";
+import { ReactNode } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ds/Button";
+import { Skeleton } from "@/components/ui/skeleton";
 
-type Column<T> = {
-  key: keyof T | string;
+interface Column<T> {
+  key: keyof T;
   label: string;
-  render?: (item: T) => React.ReactNode;
-};
+  render?: (value: any, row: T) => ReactNode;
+}
 
-type SimpleTableProps<T> = {
+interface SimpleTableProps<T> {
+  title: string;
   data: T[];
   columns: Column<T>[];
-  caption?: string;
-  onRowClick?: (item: T) => void;
-};
+  actions?: {
+    label: string;
+    onClick: (item: T) => void;
+  };
+  emptyMessage?: string;
+  loading?: boolean;
+}
 
-export const SimpleTable = <T extends Record<string, any>>({
+export function SimpleTable<T extends Record<string, any>>({
+  title,
   data,
   columns,
-  caption,
-  onRowClick,
-}: SimpleTableProps<T>) => {
+  actions,
+  emptyMessage = "Nenhum dado disponível",
+  loading,
+}: SimpleTableProps<T>) {
+  if (loading) {
+    return (
+      <Card className="p-6">
+        <Skeleton className="h-6 w-1/3 mb-4" />
+        <div className="space-y-3">
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} className="h-16 w-full" />
+          ))}
+        </div>
+      </Card>
+    );
+  }
+
   return (
-    <TableCard>
-      <Table>
-        {caption && <TableCaption>{caption}</TableCaption>}
-        <TableHeader>
-          <TableRow>
-            {columns.map((column) => (
-              <TableHead key={String(column.key)}>{column.label}</TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {data.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="text-center text-muted-foreground">
-                Nenhum registro encontrado
-              </TableCell>
-            </TableRow>
-          ) : (
-            data.map((item, index) => (
-              <TableRow
-                key={index}
-                onClick={() => onRowClick?.(item)}
-                className={onRowClick ? "cursor-pointer hover:bg-muted/50" : ""}
-              >
-                {columns.map((column) => (
-                  <TableCell key={String(column.key)}>
-                    {column.render
-                      ? column.render(item)
-                      : item[column.key as keyof T]}
-                  </TableCell>
+    <Card className="p-6">
+      <h3 className="text-lg font-semibold text-foreground mb-4">{title}</h3>
+      
+      {data.length === 0 ? (
+        <p className="text-sm text-muted-foreground text-center py-8">
+          {emptyMessage}
+        </p>
+      ) : (
+        <div className="space-y-2">
+          {data.map((row, idx) => (
+            <div
+              key={idx}
+              className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"
+            >
+              <div className="flex-1 space-y-1">
+                {columns.map((col) => (
+                  <div key={String(col.key)} className="flex items-start gap-2">
+                    <span className="text-xs font-medium text-muted-foreground min-w-[80px]">
+                      {col.label}:
+                    </span>
+                    <span className="text-sm text-foreground flex-1">
+                      {col.render ? col.render(row[col.key], row) : row[col.key]}
+                    </span>
+                  </div>
                 ))}
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </TableCard>
+              </div>
+              {actions && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => actions.onClick(row)}
+                >
+                  {actions.label}
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
   );
-};
+}
