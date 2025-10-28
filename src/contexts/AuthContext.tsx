@@ -209,7 +209,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       if (refreshTimer) clearTimeout(refreshTimer);
     };
-  }, [performLogin, scheduleRefresh, clearAuth]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /**
    * Realiza login do usuário
