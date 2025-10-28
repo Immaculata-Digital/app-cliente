@@ -29,18 +29,18 @@ const DashboardHome = () => {
   ];
 
   const columns = [
-    { key: "name", label: "Nome" },
-    { key: "email", label: "Email" },
+    { key: "name" as const, label: "Nome" },
+    { key: "email" as const, label: "Email" },
     {
-      key: "status",
+      key: "status" as const,
       label: "Status",
       render: (item: any) => (
-        <Badge variant={item.status === "active" ? "success" : "secondary"}>
+        <Badge variant={item.status === "active" ? "default" : "secondary"}>
           {item.status === "active" ? "Ativo" : "Pendente"}
         </Badge>
       ),
     },
-    { key: "value", label: "Valor" },
+    { key: "value" as const, label: "Valor" },
   ];
 
   return (
@@ -56,35 +56,30 @@ const DashboardHome = () => {
         <KPICard
           title="Total de Clientes"
           value="1.234"
-          icon={Users}
-          trend={{ value: "+12.5% vs mês anterior", positive: true }}
+          icon={<Users className="h-6 w-6" />}
         />
         <KPICard
           title="Receita Total"
           value="R$ 45.231"
-          icon={DollarSign}
-          trend={{ value: "+8.2% vs mês anterior", positive: true }}
+          icon={<DollarSign className="h-6 w-6" />}
         />
         <KPICard
           title="Crescimento"
           value="23.5%"
-          icon={TrendingUp}
-          trend={{ value: "+4.1% vs mês anterior", positive: true }}
+          icon={<TrendingUp className="h-6 w-6" />}
         />
         <KPICard
           title="Conversão"
           value="18.2%"
-          icon={BarChart3}
-          trend={{ value: "-2.3% vs mês anterior", positive: false }}
+          icon={<BarChart3 className="h-6 w-6" />}
         />
       </div>
 
       <div>
-        <h2 className="text-xl font-semibold mb-4">Clientes Recentes</h2>
         <SimpleTable
+          title="Clientes Recentes"
           data={recentClients}
           columns={columns}
-          caption="Últimos clientes cadastrados no sistema"
         />
       </div>
     </div>

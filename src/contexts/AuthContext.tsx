@@ -4,6 +4,7 @@ import { Menu } from "@/types/menu";
 import { Funcionalidade } from "@/types/funcionalidade";
 import { authService } from "@/services/api-usuarios";
 import { authMock } from "@/services/mocks";
+import { MOCK_CREDENTIALS } from "@/utils/mock-auth";
 import Cookies from "js-cookie";
 
 
@@ -197,7 +198,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Em modo desenvolvimento, faz login automático
           console.log('[Auth] Modo desenvolvimento - fazendo login automático...');
           try {
-            await performLogin('thiago.lamberti', 'Thiago@25', false);
+            await performLogin(MOCK_CREDENTIALS.login, MOCK_CREDENTIALS.password, false);
             console.log('[Auth] Login automático realizado com sucesso');
           } catch (error) {
             console.error('[Auth] Erro no login automático:', error);

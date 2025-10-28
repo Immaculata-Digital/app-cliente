@@ -10,6 +10,10 @@ interface KPICardProps {
   onClick?: () => void;
   loading?: boolean;
   icon?: React.ReactNode;
+  trend?: {
+    value: string;
+    positive: boolean;
+  };
 }
 
 export function KPICard({
@@ -20,6 +24,7 @@ export function KPICard({
   onClick,
   loading,
   icon,
+  trend,
 }: KPICardProps) {
   const hasVariacao = variacao !== undefined && variacao !== null;
   const isPositive = hasVariacao && variacao > 0;
@@ -87,6 +92,24 @@ export function KPICard({
           </span>
           <span className="text-xs text-muted-foreground ml-1">
             vs. período anterior
+          </span>
+        </div>
+      )}
+      
+      {trend && (
+        <div className="mt-4 flex items-center gap-1">
+          {trend.positive ? (
+            <TrendingUp className="h-4 w-4 text-success" />
+          ) : (
+            <TrendingDown className="h-4 w-4 text-destructive" />
+          )}
+          <span
+            className={cn(
+              "text-sm font-medium",
+              trend.positive ? "text-success" : "text-destructive"
+            )}
+          >
+            {trend.value}
           </span>
         </div>
       )}

@@ -50,32 +50,25 @@ const UserProfile = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Grupos e Permissões</CardTitle>
+            <CardTitle>Grupo e Funcionalidades</CardTitle>
             <CardDescription>
-              Grupos aos quais você pertence e suas permissões
+              Seu grupo de usuário e funcionalidades disponíveis
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {user.grupos.map((grupo) => (
-              <div key={grupo.id} className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-primary" />
-                  <h4 className="font-semibold">{grupo.nome}</h4>
-                </div>
-                {grupo.descricao && (
-                  <p className="text-sm text-muted-foreground ml-7">
-                    {grupo.descricao}
-                  </p>
-                )}
-                <div className="flex flex-wrap gap-2 ml-7">
-                  {grupo.permissoes.map((permissao) => (
-                    <Badge key={permissao.id} variant="secondary">
-                      {permissao.nome}
-                    </Badge>
-                  ))}
-                </div>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-primary" />
+                <h4 className="font-semibold">{user.grupo}</h4>
               </div>
-            ))}
+              <div className="flex flex-wrap gap-2 ml-7">
+                {user.funcionalidades.map((func, index) => (
+                  <Badge key={`${func.chave}-${index}`} variant="secondary">
+                    {func.chave}
+                  </Badge>
+                ))}
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
