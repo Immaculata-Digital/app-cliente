@@ -91,6 +91,13 @@ export const apiClientUsuarios = createHttpClient({
   enableLogging: true,
 });
 
+// Cliente para API Clientes (movimentação de pontos e dados do cliente)
+export const apiClientClientes = createHttpClient({
+  baseURL: import.meta.env.VITE_API_HOMOLOG_CLIENTES_URL || 'http://localhost:7772',
+  enableAuth: true,
+  enableLogging: true,
+});
+
 // Cliente sem autenticação (para endpoints públicos)
 export const apiClientPublic = createHttpClient({
   baseURL: import.meta.env.VITE_API_HOMOLOG_ADMIN_URL || 'http://localhost:7771',
