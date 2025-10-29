@@ -45,7 +45,7 @@ class PasswordService {
    */
   async forgotPassword(email: string): Promise<ForgotPasswordResponse> {
     return await apiClientUsuarios.post<ForgotPasswordResponse>(
-      '/auth/forgot-password',
+      '/clientes/auth/password/forgot',
       { email },
       { skipAuth: true }
     );
@@ -58,7 +58,7 @@ class PasswordService {
    */
   async resetPassword(token: string, novaSenha: string): Promise<ResetPasswordResponse> {
     return await apiClientUsuarios.post<ResetPasswordResponse>(
-      '/auth/reset-password',
+      '/clientes/auth/password/reset',
       { token, novaSenha },
       { skipAuth: true }
     );
