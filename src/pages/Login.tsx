@@ -199,7 +199,7 @@ const Login = () => {
             {/* Link Esqueci minha senha */}
             <div className="text-center">
               <Link
-                to="/forgot-password"
+                to="/esqueci-senha"
                 className="text-sm text-primary hover:text-primary/80 transition-colors font-medium"
               >
                 Esqueci minha senha

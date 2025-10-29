@@ -73,7 +73,7 @@ const ResetPassword = () => {
           </CardHeader>
           <CardFooter>
             <Button asChild variant="outline" className="w-full">
-              <Link to="/forgot-password">
+              <Link to="/esqueci-senha">
                 Solicitar novo link
               </Link>
             </Button>
