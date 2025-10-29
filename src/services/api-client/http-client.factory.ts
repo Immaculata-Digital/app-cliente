@@ -86,7 +86,7 @@ export const apiClientAdmin = createHttpClient({
 
 // Cliente para API Usuários (autenticação e gestão de usuários)
 export const apiClientUsuarios = createHttpClient({
-  baseURL: import.meta.env.VITE_API_HOMOLOG_USUARIOS_URL || 'http://localhost:7770',
+  baseURL: import.meta.env.VITE_API_HOMOLOG_USUARIOS_URL || 'https://homolog-api-usuarios.immaculatadigital.com.br/api',
   enableAuth: true,
   enableLogging: true,
 });
