@@ -3,3 +3,4 @@
  */
 
 export { pontosMovimentacaoService } from './pontos-movimentacao.service';
+export { clienteService } from './cliente.service';

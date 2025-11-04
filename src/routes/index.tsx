@@ -8,6 +8,7 @@ import PageErrorBoundary from "@/components/PageErrorBoundary";
 const Login = lazy(() => import("@/pages/Login"));
 const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
+const Registro = lazy(() => import("@/pages/Registro"));
 const ClientArea = lazy(() => import("@/pages/ClientArea"));
 
 const LoadingFallback = () => (
@@ -24,6 +25,7 @@ export const AppRoutes = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/esqueci-senha" element={<ForgotPassword />} />
         <Route path="/redefinir-senha" element={<ResetPassword />} />
+        <Route path="/registro" element={<Registro />} />
 
         {/* Main route - Client Area */}
         <Route
