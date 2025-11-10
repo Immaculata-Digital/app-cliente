@@ -19,7 +19,7 @@ class PontosRecompensasService {
     id_usuario: number
   ): Promise<PontosRecompensasResponse> {
     const response = await apiClientClientes.get<PontosRecompensasResponse>(
-      `/clientes/${schema}/${id_usuario}/pontos-recompensas`
+      `/api/clientes/${schema}/${id_usuario}/pontos-recompensas`
     );
     return response;
   }
