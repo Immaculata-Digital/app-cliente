@@ -9,4 +9,4 @@
  * 3. Deletar mock correspondente
  */
 
-export { authMock, getMockUsers } from './auth.mock';
+// Auth mock removido - usando apenas API real

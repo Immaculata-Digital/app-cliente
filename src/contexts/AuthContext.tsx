@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Menu } from "@/types/menu";
 import { Funcionalidade } from "@/types/funcionalidade";
 import { authService } from "@/services/api-usuarios";
-import { authMock } from "@/services/mocks";
-import { MOCK_CREDENTIALS } from "@/utils/mock-auth";
 import Cookies from "js-cookie";
 
 export interface User {
