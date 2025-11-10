@@ -110,13 +110,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // 3. Monta objeto User com menus e funcionalidades
         const user: User = {
-          id: response.user.id,
+          id: response.user.id_usuario,
           login: response.user.login,
           email: response.user.email,
-          grupo: response.user.grupo,
+          grupo: String(response.user.id_grupo_usuario ?? ''),
           nome: response.user.nome,
-          menus: response.menus || [],
-          funcionalidades: response.permissions || [],
+          menus: [],
+          funcionalidades: [],
         };
 
         // 4. Armazena no storage correto
