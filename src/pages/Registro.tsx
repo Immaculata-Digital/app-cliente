@@ -10,20 +10,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ds/Input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
 const Registro = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   const {
     register,
     handleSubmit,
@@ -105,10 +99,11 @@ const Registro = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         <div className="bg-card rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-center mb-2">Criar Conta</h1>
-          <p className="text-muted-foreground text-center mb-6">
-            Preencha os dados para se cadastrar
-          </p>
+          {/* Header com gradiente */}
+          <div className="bg-gradient-primary p-8 text-center">
+            <h1 className="text-3xl font-bold text-primary-foreground mb-2">Criar Conta</h1>
+            <p className="text-primary-foreground/90">Preencha os dados para se cadastrar</p>
+          </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <Input
@@ -150,10 +145,7 @@ const Registro = () => {
 
             <div className="space-y-2">
               <Label>Sexo</Label>
-              <Select
-                value={sexo}
-                onValueChange={(value) => setValue("sexo", value as "M" | "F" | "O")}
-              >
+              <Select value={sexo} onValueChange={(value) => setValue("sexo", value as "M" | "F" | "O")}>
                 <SelectTrigger className={errors.sexo ? "border-destructive" : ""}>
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
@@ -163,21 +155,13 @@ const Registro = () => {
                   <SelectItem value="O">Outro</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.sexo && (
-                <p className="text-sm text-destructive">{errors.sexo.message}</p>
-              )}
+              {errors.sexo && <p className="text-sm text-destructive">{errors.sexo.message}</p>}
             </div>
 
             <div className="space-y-2">
               <Label>Senha</Label>
-              <PasswordInput
-                {...register("senha")}
-                error={errors.senha?.message}
-                placeholder="Digite sua senha"
-              />
-              {errors.senha && (
-                <p className="text-sm text-destructive">{errors.senha.message}</p>
-              )}
+              <PasswordInput {...register("senha")} error={errors.senha?.message} placeholder="Digite sua senha" />
+              {errors.senha && <p className="text-sm text-destructive">{errors.senha.message}</p>}
             </div>
 
             <div className="space-y-2">
@@ -187,9 +171,7 @@ const Registro = () => {
                 error={errors.confirmar_senha?.message}
                 placeholder="Digite sua senha novamente"
               />
-              {errors.confirmar_senha && (
-                <p className="text-sm text-destructive">{errors.confirmar_senha.message}</p>
-              )}
+              {errors.confirmar_senha && <p className="text-sm text-destructive">{errors.confirmar_senha.message}</p>}
             </div>
 
             <div className="flex items-start space-x-2">
@@ -205,15 +187,9 @@ const Registro = () => {
                 Aceito os termos de uso e política de privacidade
               </Label>
             </div>
-            {errors.aceite_termos && (
-              <p className="text-sm text-destructive">{errors.aceite_termos.message}</p>
-            )}
+            {errors.aceite_termos && <p className="text-sm text-destructive">{errors.aceite_termos.message}</p>}
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isSubmitting}
-            >
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
