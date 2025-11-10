@@ -1,17 +1,12 @@
 /**
  * HTTP Client Factory
- * 
+ *
  * Factory pattern para criar instâncias configuradas do HttpClient
  * Reduz duplicação de código e centraliza configuração
  */
 
-import { HttpClient } from './http-client';
-import {
-  authInterceptor,
-  jsonResponseInterceptor,
-  errorInterceptor,
-  loggingInterceptor,
-} from './interceptors';
+import { HttpClient } from "./http-client";
+import { authInterceptor, jsonResponseInterceptor, errorInterceptor, loggingInterceptor } from "./interceptors";
 
 export interface HttpClientConfig {
   baseURL: string;
@@ -26,7 +21,7 @@ export interface HttpClientConfig {
 
 /**
  * Cria uma instância configurada do HttpClient
- * 
+ *
  * @example
  * ```ts
  * const apiClient = createHttpClient({
@@ -44,7 +39,7 @@ export function createHttpClient(config: HttpClientConfig): HttpClient {
     client.addRequestInterceptor(authInterceptor);
   }
 
-  if (config.enableLogging !== false && process.env.NODE_ENV === 'development') {
+  if (config.enableLogging !== false && process.env.NODE_ENV === "development") {
     client.addRequestInterceptor(loggingInterceptor);
   }
 
@@ -53,19 +48,19 @@ export function createHttpClient(config: HttpClientConfig): HttpClient {
 
   // Adiciona interceptors customizados se fornecidos
   if (config.customInterceptors?.request) {
-    config.customInterceptors.request.forEach(interceptor => {
+    config.customInterceptors.request.forEach((interceptor) => {
       client.addRequestInterceptor(interceptor);
     });
   }
 
   if (config.customInterceptors?.response) {
-    config.customInterceptors.response.forEach(interceptor => {
+    config.customInterceptors.response.forEach((interceptor) => {
       client.addResponseInterceptor(interceptor);
     });
   }
 
   if (config.customInterceptors?.error) {
-    config.customInterceptors.error.forEach(interceptor => {
+    config.customInterceptors.error.forEach((interceptor) => {
       client.addErrorInterceptor(interceptor);
     });
   }
@@ -79,28 +74,28 @@ export function createHttpClient(config: HttpClientConfig): HttpClient {
 
 // Cliente para API Admin (gestão interna)
 export const apiClientAdmin = createHttpClient({
-  baseURL: import.meta.env.VITE_API_HOMOLOG_ADMIN_URL || 'http://localhost:7771',
+  baseURL: import.meta.env.VITE_API_HOMOLOG_ADMIN_URL || "http://localhost:7771",
   enableAuth: true,
   enableLogging: true,
 });
 
 // Cliente para API Usuários (autenticação e gestão de usuários)
 export const apiClientUsuarios = createHttpClient({
-  baseURL: import.meta.env.VITE_API_HOMOLOG_USUARIOS_URL || 'https://homolog-api-usuarios.immaculatadigital.com.br/api',
+  baseURL: import.meta.env.VITE_API_HOMOLOG_USUARIOS_URL || "https://homolog-api-usuarios.immaculatadigital.com.br/api",
   enableAuth: true,
   enableLogging: true,
 });
 
 // Cliente para API Clientes (movimentação de pontos e dados do cliente)
 export const apiClientClientes = createHttpClient({
-  baseURL: import.meta.env.VITE_API_HOMOLOG_CLIENTES_URL || 'https://homolog-api-clientes.immaculatadigital.com.br',
+  baseURL: import.meta.env.VITE_API_HOMOLOG_CLIENTES_URL || "http://localhost:7773",
   enableAuth: true,
   enableLogging: true,
 });
 
 // Cliente sem autenticação (para endpoints públicos)
 export const apiClientPublic = createHttpClient({
-  baseURL: import.meta.env.VITE_API_HOMOLOG_ADMIN_URL || 'http://localhost:7771',
+  baseURL: import.meta.env.VITE_API_HOMOLOG_ADMIN_URL || "http://localhost:7771",
   enableAuth: false,
   enableLogging: false,
 });
