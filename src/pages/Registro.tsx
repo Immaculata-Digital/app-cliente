@@ -105,7 +105,12 @@ const Registro = () => {
             <p className="text-primary-foreground/90">Preencha os dados para se cadastrar</p>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="p-8 space-y-6"
+            role="form"
+            aria-label="Formulário de Cadastro"
+          >
             <Input
               label="Nome Completo"
               {...register("nome_completo")}
