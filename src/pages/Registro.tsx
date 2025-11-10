@@ -98,7 +98,7 @@ const Registro = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
-        <div className="bg-card rounded-lg shadow-lg p-8">
+        <div className="bg-card rounded-2xl shadow-lg border border-border overflow-hidden">
           {/* Header com gradiente */}
           <div className="bg-gradient-primary p-8 text-center">
             <h1 className="text-3xl font-bold text-primary-foreground mb-2">Criar Conta</h1>
