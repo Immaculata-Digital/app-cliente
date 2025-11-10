@@ -25,7 +25,7 @@ type ModalContext = "resgate" | "somar-pontos";
 
 const ClientArea = () => {
   const { toast } = useToast();
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
   const [modalAberto, setModalAberto] = useState<ModalType>(null);
   const [contextoModal, setContextoModal] = useState<ModalContext>("resgate");
   const [itemSelecionado, setItemSelecionado] = useState<any>(null);
@@ -38,8 +38,10 @@ const ClientArea = () => {
   });
 
   useEffect(() => {
-    fetchRecompensas();
-  }, [fetchRecompensas]);
+    if (!isLoading && user?.id) {
+      fetchRecompensas();
+    }
+  }, [isLoading, user?.id, fetchRecompensas]);
 
   const copiarCodigo = () => {
     const codigo = recompensas?.codigo_cliente || MOCK_CLIENTE.codigo;
