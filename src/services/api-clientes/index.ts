@@ -4,3 +4,4 @@
 
 export { pontosMovimentacaoService } from './pontos-movimentacao.service';
 export { clienteService } from './cliente.service';
+export { pontosRecompensasService } from './pontos-recompensas.service';

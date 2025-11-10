@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Gift, Plus, Copy, X, LogOut, User, QrCode } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,24 +7,18 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import QRCodeComponent from "react-qr-code";
+import { usePontosRecompensas } from "@/hooks/usePontosRecompensas";
 
 // Schema tenant padrão (multi-tenant)
 const TENANT_SCHEMA = "z_demo";
 
-// Dados mockados
+// Dados mockados do cliente
 const MOCK_CLIENTE = {
-  id_cliente: "CLT001234",
+  id: 42,
+  codigo: "CLT001234",
   nome: "João Silva",
-  saldo_pontos: 1250,
   schema: TENANT_SCHEMA,
 };
-
-const MOCK_ITEMS = [
-  { id: 1, nome: "Açaí 500ml", pontos: 300, tipo: "PEQUENO", disponivel: true },
-  { id: 2, nome: "Pizza Grande", pontos: 800, tipo: "PEQUENO", disponivel: true },
-  { id: 3, nome: "Hambúrguer Artesanal", pontos: 450, tipo: "PEQUENO", disponivel: true },
-  { id: 4, nome: "Cafeteira Elétrica", pontos: 5000, tipo: "GRANDE", disponivel: false },
-];
 
 type ModalType = "codigo" | "confirmar-resgate" | null;
 type ModalContext = "resgate" | "somar-pontos";
@@ -34,12 +28,22 @@ const ClientArea = () => {
   const { user, logout } = useAuth();
   const [modalAberto, setModalAberto] = useState<ModalType>(null);
   const [contextoModal, setContextoModal] = useState<ModalContext>("resgate");
-  const [itemSelecionado, setItemSelecionado] = useState<typeof MOCK_ITEMS[0] | null>(null);
+  const [itemSelecionado, setItemSelecionado] = useState<any>(null);
   const [resgatePendente, setResgatePendente] = useState(false);
   const [showQR, setShowQR] = useState(false);
 
+  const { loading, recompensas, fetchRecompensas } = usePontosRecompensas({
+    schema: MOCK_CLIENTE.schema,
+    id_cliente: MOCK_CLIENTE.id,
+  });
+
+  useEffect(() => {
+    fetchRecompensas();
+  }, [fetchRecompensas]);
+
   const copiarCodigo = () => {
-    navigator.clipboard.writeText(MOCK_CLIENTE.id_cliente);
+    const codigo = recompensas?.codigo_cliente || MOCK_CLIENTE.codigo;
+    navigator.clipboard.writeText(codigo);
     toast({
       title: "Código copiado!",
       description: "O código foi copiado para a área de transferência.",
@@ -51,7 +55,7 @@ const ClientArea = () => {
     setModalAberto("codigo");
   };
 
-  const iniciarResgate = (item: typeof MOCK_ITEMS[0]) => {
+  const iniciarResgate = (item: any) => {
     setItemSelecionado(item);
     setModalAberto("confirmar-resgate");
   };
@@ -65,7 +69,7 @@ const ClientArea = () => {
     // POST /clientes/:schema/:id_cliente/pedidos-resgate
     // Body: { id_item_recompensa, tipo: "PEQUENO", origem: "RESGATE" }
     // Schema: TENANT_SCHEMA (z_demo)
-    console.log(`[Mock API] POST /clientes/${TENANT_SCHEMA}/${MOCK_CLIENTE.id_cliente}/pedidos-resgate`, {
+    console.log(`[Mock API] POST /clientes/${TENANT_SCHEMA}/${MOCK_CLIENTE.id}/pedidos-resgate`, {
       id_item_recompensa: itemSelecionado.id,
       tipo: itemSelecionado.tipo,
       origem: "RESGATE"
@@ -125,7 +129,7 @@ const ClientArea = () => {
               <Gift className="h-5 w-5 text-primary" />
             </div>
             <p className="text-3xl font-bold text-foreground">
-              {MOCK_CLIENTE.saldo_pontos.toLocaleString()}
+              {loading ? "..." : (recompensas?.quantidade_pontos ?? 0).toLocaleString()}
             </p>
             <p className="text-xs text-muted-foreground mt-1">pontos disponíveis</p>
           </Card>
@@ -136,7 +140,7 @@ const ClientArea = () => {
               <h3 className="text-sm font-medium text-muted-foreground">Meu Código</h3>
             </div>
             <p className="text-2xl font-mono font-bold text-foreground mb-3">
-              {MOCK_CLIENTE.id_cliente}
+              {recompensas?.codigo_cliente || MOCK_CLIENTE.codigo}
             </p>
             <div className="flex gap-2">
               <Button
@@ -175,35 +179,45 @@ const ClientArea = () => {
             Catálogo de Recompensas
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {MOCK_ITEMS.map((item) => (
-              <Card key={item.id} className="p-4 bg-card border-border">
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <h3 className="font-semibold text-foreground">{item.nome}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {item.pontos.toLocaleString()} pontos
-                    </p>
-                  </div>
-                  {item.tipo === "PEQUENO" && (
-                    <Badge variant="secondary" className="text-xs">
-                      Resgate presencial
-                    </Badge>
-                  )}
-                </div>
-                <Button
-                  size="sm"
-                  className="w-full"
-                  disabled={!item.disponivel || MOCK_CLIENTE.saldo_pontos < item.pontos}
-                  onClick={() => iniciarResgate(item)}
-                >
-                  {!item.disponivel
-                    ? "Indisponível"
-                    : MOCK_CLIENTE.saldo_pontos < item.pontos
-                    ? "Pontos insuficientes"
-                    : "Resgatar"}
-                </Button>
-              </Card>
-            ))}
+            {loading ? (
+              <p className="text-muted-foreground col-span-full text-center">Carregando recompensas...</p>
+            ) : recompensas?.recompensas && recompensas.recompensas.length > 0 ? (
+              recompensas.recompensas.map((item, index) => {
+                const pontosInsuficientes = (recompensas.quantidade_pontos ?? 0) < item.qtd_pontos;
+                
+                return (
+                  <Card key={index} className="p-4 bg-card border-border">
+                    <div className="flex flex-col gap-3">
+                      {item.foto && (
+                        <div className="aspect-video bg-muted rounded-md overflow-hidden">
+                          <img 
+                            src={item.foto} 
+                            alt={item.nome_item}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div>
+                        <h3 className="font-semibold text-foreground">{item.nome_item}</h3>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {item.qtd_pontos.toLocaleString()} pontos
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        className="w-full"
+                        disabled={pontosInsuficientes}
+                        onClick={() => iniciarResgate(item)}
+                      >
+                        {pontosInsuficientes ? "Pontos insuficientes" : "Resgatar"}
+                      </Button>
+                    </div>
+                  </Card>
+                );
+              })
+            ) : (
+              <p className="text-muted-foreground col-span-full text-center">Nenhuma recompensa disponível</p>
+            )}
           </div>
         </div>
       </div>
@@ -226,7 +240,7 @@ const ClientArea = () => {
             {showQR ? (
               <div className="bg-white p-4 rounded-lg">
                 <QRCodeComponent
-                  value={MOCK_CLIENTE.id_cliente}
+                  value={recompensas?.codigo_cliente || MOCK_CLIENTE.codigo}
                   size={200}
                   level="H"
                 />
@@ -235,7 +249,7 @@ const ClientArea = () => {
               <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-2">Código do Cliente</p>
                 <p className="text-5xl font-mono font-bold text-foreground tracking-wider">
-                  {MOCK_CLIENTE.id_cliente}
+                  {recompensas?.codigo_cliente || MOCK_CLIENTE.codigo}
                 </p>
               </div>
             )}
@@ -288,9 +302,9 @@ const ClientArea = () => {
           {itemSelecionado && (
             <div className="py-4">
               <div className="bg-muted/50 p-4 rounded-lg mb-4">
-                <p className="font-semibold text-foreground">{itemSelecionado.nome}</p>
+                <p className="font-semibold text-foreground">{itemSelecionado.nome_item}</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {itemSelecionado.pontos.toLocaleString()} pontos
+                  {itemSelecionado.qtd_pontos.toLocaleString()} pontos
                 </p>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
