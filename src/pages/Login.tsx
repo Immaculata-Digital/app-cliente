@@ -12,7 +12,6 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { PasswordInput } from "@/components/ds/PasswordInput";
 import { cn } from "@/lib/utils";
-import { MOCK_CREDENTIALS } from "@/utils/mock-auth";
 
 const Login = () => {
   const navigate = useNavigate();

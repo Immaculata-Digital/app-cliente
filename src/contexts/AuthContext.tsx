@@ -7,7 +7,6 @@ import { authMock } from "@/services/mocks";
 import { MOCK_CREDENTIALS } from "@/utils/mock-auth";
 import Cookies from "js-cookie";
 
-
 export interface User {
   id: number;
   login: string;
@@ -82,13 +81,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const scheduleRefresh = useCallback(
     (expiresIn: number) => {
       // if (refreshTimer) clearTimeout(refreshTimer);
-
       // // Agenda refresh 60s antes do token expirar
       // const refreshTime = Math.max((expiresIn - 60) * 1000, 60000);
       // const timer = setTimeout(() => {
       //   refreshSession();
       // }, refreshTime);
-
       // setRefreshTimer(timer);
     },
     [refreshTimer],
@@ -97,87 +94,88 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   /**
    * Função interna para realizar login (compartilhada entre login manual e automático)
    */
-  const performLogin = useCallback(async (loginEmail: string, password: string, rememberMe = false) => {
-    logEvent("auth_login_attempt", { login: loginEmail });
-
-    try {
-      let response;
+  const performLogin = useCallback(
+    async (loginEmail: string, password: string, rememberMe = false) => {
+      logEvent("auth_login_attempt", { login: loginEmail });
 
       try {
-        // 1. Tenta login na API real primeiro
-        response = await authService.login({ login: loginEmail, senha: password }, rememberMe);
-        logEvent("auth_api_success", { login: loginEmail });
-      } catch (apiError: any) {
-        // 2. Se API falhar, usa mock como fallback
-        console.warn("⚠️ API indisponível, usando mock de autenticação");
-        response = await authMock.login(loginEmail, password);
-        logEvent("auth_mock_fallback", { login: loginEmail });
+        let response;
+
+        try {
+          // 1. Tenta login na API real
+          response = await authService.login({ login: loginEmail, senha: password }, rememberMe);
+          logEvent("auth_api_success", { login: loginEmail });
+        } catch (apiError: any) {
+          // 2. Se API falhar, exibe log
+          logEvent("auth_mock_fallback", { login: loginEmail });
+        }
+
+        // 3. Monta objeto User com menus e funcionalidades
+        const user: User = {
+          id: response.user.id,
+          login: response.user.login,
+          email: response.user.email,
+          grupo: response.user.grupo,
+          nome: response.user.nome,
+          menus: response.menus || [],
+          funcionalidades: response.permissions || [],
+        };
+
+        // 4. Armazena no storage correto
+        const storage = rememberMe ? localStorage : sessionStorage;
+        storage.setItem("user", JSON.stringify(user));
+
+        // Calcula expiração corretamente (suporta '15m', '900s', '2h')
+        const parseDurationToSeconds = (v: string) => {
+          if (!v) return 900;
+          const n = parseInt(v);
+          if (v.endsWith("m")) return n * 60;
+          if (v.endsWith("h")) return n * 3600;
+          if (v.endsWith("s")) return n;
+          return n; // assume segundos
+        };
+        const accessExpiresSec = parseDurationToSeconds(response.access_expires_in);
+
+        sessionStorage.setItem("access_expires_in", String(accessExpiresSec));
+        sessionStorage.setItem("access_token", response.access_token);
+
+        // 5. Armazena tokens
+        Cookies.set("access_token", response.access_token, {
+          expires: accessExpiresSec / (24 * 60 * 60), // dias
+          secure: window.location.protocol === "https:",
+          sameSite: "strict",
+        });
+        storage.setItem("refresh_token", response.refresh_token);
+
+        // 6. Atualiza state
+        setUser(user);
+        scheduleRefresh(accessExpiresSec);
+
+        logEvent("auth_login_success", { login: loginEmail, userId: user.id });
+      } catch (error: any) {
+        logEvent("auth_login_error", { login: loginEmail, error: error.message });
+
+        if (
+          error.message?.includes("401") ||
+          error.message?.includes("Unauthorized") ||
+          error.message === "LOGIN_INVALID"
+        ) {
+          throw new Error("LOGIN_INVALID");
+        } else if (error.message?.includes("403") || error.message?.includes("Forbidden")) {
+          throw new Error("USER_BLOCKED");
+        } else if (error.message?.includes("429")) {
+          throw new Error("RATE_LIMIT");
+        } else if (error.message?.includes("Network") || error.message?.includes("fetch")) {
+          throw new Error("NETWORK_ERROR");
+        } else if (error.message?.includes("500")) {
+          throw new Error("SERVER_ERROR");
+        }
+
+        throw error;
       }
-
-      // 3. Monta objeto User com menus e funcionalidades
-      const user: User = {
-        id: response.user.id,
-        login: response.user.login,
-        email: response.user.email,
-        grupo: response.user.grupo,
-        nome: response.user.nome,
-        menus: response.menus || [],
-        funcionalidades: response.permissions || [],
-      };
-
-      // 4. Armazena no storage correto
-      const storage = rememberMe ? localStorage : sessionStorage;
-      storage.setItem("user", JSON.stringify(user));
-
-      // Calcula expiração corretamente (suporta '15m', '900s', '2h')
-      const parseDurationToSeconds = (v: string) => {
-        if (!v) return 900;
-        const n = parseInt(v);
-        if (v.endsWith("m")) return n * 60;
-        if (v.endsWith("h")) return n * 3600;
-        if (v.endsWith("s")) return n;
-        return n; // assume segundos
-      };
-      const accessExpiresSec = parseDurationToSeconds(response.access_expires_in);
-
-      sessionStorage.setItem("access_expires_in", String(accessExpiresSec));
-      sessionStorage.setItem("access_token", response.access_token);
-
-      // 5. Armazena tokens
-      Cookies.set("access_token", response.access_token, {
-        expires: accessExpiresSec / (24 * 60 * 60), // dias
-        secure: window.location.protocol === "https:",
-        sameSite: "strict",
-      });
-      storage.setItem("refresh_token", response.refresh_token);
-
-      // 6. Atualiza state
-      setUser(user);
-      scheduleRefresh(accessExpiresSec);
-
-      logEvent("auth_login_success", { login: loginEmail, userId: user.id });
-    } catch (error: any) {
-      logEvent("auth_login_error", { login: loginEmail, error: error.message });
-
-      if (
-        error.message?.includes("401") ||
-        error.message?.includes("Unauthorized") ||
-        error.message === "LOGIN_INVALID"
-      ) {
-        throw new Error("LOGIN_INVALID");
-      } else if (error.message?.includes("403") || error.message?.includes("Forbidden")) {
-        throw new Error("USER_BLOCKED");
-      } else if (error.message?.includes("429")) {
-        throw new Error("RATE_LIMIT");
-      } else if (error.message?.includes("Network") || error.message?.includes("fetch")) {
-        throw new Error("NETWORK_ERROR");
-      } else if (error.message?.includes("500")) {
-        throw new Error("SERVER_ERROR");
-      }
-
-      throw error;
-    }
-  }, [scheduleRefresh]);
+    },
+    [scheduleRefresh],
+  );
 
   // Carrega sessão do storage ao iniciar
   useEffect(() => {
@@ -268,39 +266,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * Verifica se o usuário tem acesso a um menu
    * Se tem acesso ao menu, tem acesso a todas as funcionalidades daquele menu
    */
-  const hasMenu = useCallback((chave: string): boolean => {
-    if (!user) return false;
-    return user.menus.some(m => m.chave === chave);
-  }, [user]);
+  const hasMenu = useCallback(
+    (chave: string): boolean => {
+      if (!user) return false;
+      return user.menus.some((m) => m.chave === chave);
+    },
+    [user],
+  );
 
   /**
    * Verifica se o usuário tem uma funcionalidade específica
    * Por hora, se tem acesso ao menu, tem todas as funcionalidades
    * No futuro, verificará funcionalidades granulares retornadas pelo backend
    */
-  const hasPermission = useCallback((chave: string): boolean => {
-    if (!user) return false;
-    
-    // Verifica se tem a funcionalidade diretamente
-    const hasFuncionalidade = user.funcionalidades.some(f => f.chave === chave);
-    if (hasFuncionalidade) return true;
-    
-    // Se não tem a funcionalidade específica, verifica se tem acesso ao menu pai
-    // Por hora, ter acesso ao menu significa ter todas as funcionalidades
-    const funcToMenu: Record<string, string> = {
-      'PONTOS-CREDITAR': 'GESTAO-CLIENTES',
-      'PONTOS-DEBITAR': 'GESTAO-CLIENTES',
-      'ITENS-RECOMPENSA-CRIAR': 'ITENS-RECOMPENSA',
-      'ITENS-RECOMPENSA-EDITAR': 'ITENS-RECOMPENSA',
-      'ITENS-RECOMPENSA-EXCLUIR': 'ITENS-RECOMPENSA',
-      'LOJAS-CRIAR': 'LOJAS',
-      'LOJAS-EDITAR': 'LOJAS',
-      'LOJAS-EXCLUIR': 'LOJAS',
-    };
-    
-    const parentMenu = funcToMenu[chave] || chave;
-    return hasMenu(parentMenu);
-  }, [user, hasMenu]);
+  const hasPermission = useCallback(
+    (chave: string): boolean => {
+      if (!user) return false;
+
+      // Verifica se tem a funcionalidade diretamente
+      const hasFuncionalidade = user.funcionalidades.some((f) => f.chave === chave);
+      if (hasFuncionalidade) return true;
+
+      // Se não tem a funcionalidade específica, verifica se tem acesso ao menu pai
+      // Por hora, ter acesso ao menu significa ter todas as funcionalidades
+      const funcToMenu: Record<string, string> = {
+        "PONTOS-CREDITAR": "GESTAO-CLIENTES",
+        "PONTOS-DEBITAR": "GESTAO-CLIENTES",
+        "ITENS-RECOMPENSA-CRIAR": "ITENS-RECOMPENSA",
+        "ITENS-RECOMPENSA-EDITAR": "ITENS-RECOMPENSA",
+        "ITENS-RECOMPENSA-EXCLUIR": "ITENS-RECOMPENSA",
+        "LOJAS-CRIAR": "LOJAS",
+        "LOJAS-EDITAR": "LOJAS",
+        "LOJAS-EXCLUIR": "LOJAS",
+      };
+
+      const parentMenu = funcToMenu[chave] || chave;
+      return hasMenu(parentMenu);
+    },
+    [user, hasMenu],
+  );
 
   return (
     <AuthContext.Provider
@@ -309,14 +313,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user,
         isLoading,
         login,
-      logout,
-      refreshSession,
-      hasPermission,
-      hasMenu,
-    }}
-  >
-    {children}
-  </AuthContext.Provider>
+        logout,
+        refreshSession,
+        hasPermission,
+        hasMenu,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
   );
 }
 
