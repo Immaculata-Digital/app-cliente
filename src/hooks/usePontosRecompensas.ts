@@ -8,10 +8,10 @@ import type { PontosRecompensasResponse } from '@/types/cliente-pontos-recompens
 
 interface UsePontosRecompensasProps {
   schema: string;
-  id_cliente: number;
+  id_usuario: number;
 }
 
-export function usePontosRecompensas({ schema, id_cliente }: UsePontosRecompensasProps) {
+export function usePontosRecompensas({ schema, id_usuario }: UsePontosRecompensasProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [recompensas, setRecompensas] = useState<PontosRecompensasResponse | null>(null);
@@ -24,7 +24,7 @@ export function usePontosRecompensas({ schema, id_cliente }: UsePontosRecompensa
     setError(null);
 
     try {
-      const response = await pontosRecompensasService.getRecompensas(schema, id_cliente);
+      const response = await pontosRecompensasService.getRecompensas(schema, id_usuario);
       setRecompensas(response);
       return response;
     } catch (err: any) {
@@ -35,7 +35,7 @@ export function usePontosRecompensas({ schema, id_cliente }: UsePontosRecompensa
     } finally {
       setLoading(false);
     }
-  }, [schema, id_cliente]);
+  }, [schema, id_usuario]);
 
   return {
     loading,

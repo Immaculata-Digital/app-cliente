@@ -34,7 +34,7 @@ const ClientArea = () => {
 
   const { loading, recompensas, fetchRecompensas } = usePontosRecompensas({
     schema: MOCK_CLIENTE.schema,
-    id_cliente: MOCK_CLIENTE.id,
+    id_usuario: user?.id || 0,
   });
 
   useEffect(() => {
