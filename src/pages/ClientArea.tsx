@@ -144,36 +144,16 @@ const ClientArea = () => {
             <p className="text-2xl font-mono font-bold text-foreground mb-3">
               {recompensas?.codigo_cliente || MOCK_CLIENTE.codigo}
             </p>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={copiarCodigo}
-                className="flex-1"
-              >
-                <Copy className="h-4 w-4 mr-2" />
-                Copiar
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => abrirModalCodigo("resgate")}
-                className="flex-1"
-              >
-                Mostrar em tela cheia
-              </Button>
-            </div>
+            <Button
+              size="sm"
+              onClick={() => abrirModalCodigo("somar-pontos")}
+              className="w-full"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Somar Pontos
+            </Button>
           </Card>
         </div>
-
-        {/* Botão Somar Pontos */}
-        <Button
-          size="lg"
-          className="w-full"
-          onClick={() => abrirModalCodigo("somar-pontos")}
-        >
-          <Plus className="h-5 w-5 mr-2" />
-          Somar Pontos
-        </Button>
 
         {/* Catálogo de Itens */}
         <div>
