@@ -93,7 +93,7 @@ export const apiClientUsuarios = createHttpClient({
 
 // Cliente para API Clientes (movimentação de pontos e dados do cliente)
 export const apiClientClientes = createHttpClient({
-  baseURL: import.meta.env.VITE_API_HOMOLOG_CLIENTES_URL || 'https://homolog-api-clientes.immaculatadigital.com.br',
+  baseURL: import.meta.env.VITE_API_HOMOLOG_CLIENTES_URL || 'http://localhost:7773',
   enableAuth: true,
   enableLogging: true,
 });
