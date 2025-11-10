@@ -20,6 +20,13 @@ export function usePontosRecompensas({ schema, id_usuario }: UsePontosRecompensa
    * Buscar catálogo de recompensas
    */
   const fetchRecompensas = useCallback(async (): Promise<PontosRecompensasResponse | undefined> => {
+    if (!id_usuario || id_usuario === 0) {
+      const errorMessage = 'Usuário não autenticado. Faça login para acessar as recompensas.';
+      setError(errorMessage);
+      console.error('Erro ao buscar recompensas:', errorMessage);
+      return undefined;
+    }
+
     setLoading(true);
     setError(null);
 
