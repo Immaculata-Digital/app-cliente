@@ -21,6 +21,8 @@ export interface LoginResponse {
     login: string;
     email: string;
     id_grupo_usuario: number;
+    id_cliente: number | null;
+    nome_completo: string | null;
     nome?: string;
     funcionalidades?: Array<{
       id_funcionalidade: number;

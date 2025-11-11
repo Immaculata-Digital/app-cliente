@@ -63,6 +63,9 @@ const Login = () => {
       if (error instanceof Error && error.message === "LOGIN_INVALID") {
         title = "Credenciais inválidas";
         description = "Login ou senha inválidos.";
+      } else if (error instanceof Error && error.message === "USER_NOT_CLIENT") {
+        title = "Acesso não permitido";
+        description = "esse usuário não é um cliente";
       } else if (error instanceof Error && error.message === "USER_BLOCKED") {
         title = "Usuário bloqueado";
         description = "Usuário bloqueado. Procure o administrador.";

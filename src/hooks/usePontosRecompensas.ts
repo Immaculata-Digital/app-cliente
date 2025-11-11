@@ -8,10 +8,10 @@ import type { PontosRecompensasResponse } from '@/types/cliente-pontos-recompens
 
 interface UsePontosRecompensasProps {
   schema: string;
-  id_usuario: number;
+  id_cliente: number;
 }
 
-export function usePontosRecompensas({ schema, id_usuario }: UsePontosRecompensasProps) {
+export function usePontosRecompensas({ schema, id_cliente }: UsePontosRecompensasProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [recompensas, setRecompensas] = useState<PontosRecompensasResponse | null>(null);
@@ -20,7 +20,7 @@ export function usePontosRecompensas({ schema, id_usuario }: UsePontosRecompensa
    * Buscar catálogo de recompensas
    */
   const fetchRecompensas = useCallback(async (): Promise<PontosRecompensasResponse | undefined> => {
-    if (!id_usuario || id_usuario === 0) {
+    if (!id_cliente || id_cliente === 0) {
       const errorMessage = 'Usuário não autenticado. Faça login para acessar as recompensas.';
       setError(errorMessage);
       console.error('Erro ao buscar recompensas:', errorMessage);
@@ -31,7 +31,7 @@ export function usePontosRecompensas({ schema, id_usuario }: UsePontosRecompensa
     setError(null);
 
     try {
-      const response = await pontosRecompensasService.getRecompensas(schema, id_usuario);
+      const response = await pontosRecompensasService.getRecompensas(schema, id_cliente);
       setRecompensas(response);
       return response;
     } catch (err: any) {
@@ -42,7 +42,7 @@ export function usePontosRecompensas({ schema, id_usuario }: UsePontosRecompensa
     } finally {
       setLoading(false);
     }
-  }, [schema, id_usuario]);
+  }, [schema, id_cliente]);
 
   return {
     loading,

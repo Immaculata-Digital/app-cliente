@@ -11,6 +11,8 @@ export interface User {
   email: string;
   grupo: string;
   nome?: string;
+  clienteId: number | null;
+  clienteNome: string | null;
   menus: Menu[];
   funcionalidades: Funcionalidade[];
 }
@@ -21,6 +23,8 @@ interface LoginResponse {
     login: string;
     email: string;
     id_grupo_usuario: number;
+    id_cliente: number | null;
+    nome_completo: string | null;
   };
   access_token: string;
   access_expires_in: string;
@@ -69,6 +73,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     Cookies.remove("access_token");
+    Cookies.remove("cliente_id");
+    Cookies.remove("cliente_nome");
     if (refreshTimer) clearTimeout(refreshTimer);
   }, [refreshTimer]);
 
@@ -97,24 +103,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logEvent("auth_login_attempt", { login: loginEmail });
 
       try {
-        let response;
+        // 1. Tenta login na API real
+        const response = await authService.login({ login: loginEmail, senha: password }, rememberMe);
+        logEvent("auth_api_success", { login: loginEmail });
 
-        try {
-          // 1. Tenta login na API real
-          response = await authService.login({ login: loginEmail, senha: password }, rememberMe);
-          logEvent("auth_api_success", { login: loginEmail });
-        } catch (apiError: any) {
-          // 2. Se API falhar, exibe log
-          logEvent("auth_mock_fallback", { login: loginEmail });
+        // 2. Valida se usuário possui cliente vinculado
+        if (!response.user.id_cliente) {
+          logEvent("auth_login_blocked_no_client", { login: loginEmail, userId: response.user.id_usuario });
+          clearAuth();
+          throw new Error("USER_NOT_CLIENT");
         }
+
+        const nomeCliente = response.user.nome_completo ?? response.user.login;
 
         // 3. Monta objeto User com menus e funcionalidades
         const user: User = {
           id: response.user.id_usuario,
           login: response.user.login,
           email: response.user.email,
-          grupo: String(response.user.id_grupo_usuario ?? ''),
-          nome: response.user.nome,
+          grupo: String(response.user.id_grupo_usuario ?? ""),
+          nome: nomeCliente,
+          clienteId: response.user.id_cliente,
+          clienteNome: nomeCliente,
           menus: [],
           funcionalidades: [],
         };
@@ -137,12 +147,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         sessionStorage.setItem("access_expires_in", String(accessExpiresSec));
         sessionStorage.setItem("access_token", response.access_token);
 
-        // 5. Armazena tokens
-        Cookies.set("access_token", response.access_token, {
-          expires: accessExpiresSec / (24 * 60 * 60), // dias
+        const cookieOptions = {
+          expires: accessExpiresSec / (24 * 60 * 60),
           secure: window.location.protocol === "https:",
-          sameSite: "strict",
-        });
+          sameSite: "Strict" as const,
+        };
+
+        // 5. Armazena tokens e dados do cliente em cookies
+        Cookies.set("access_token", response.access_token, cookieOptions);
+        Cookies.set("cliente_id", String(response.user.id_cliente), cookieOptions);
+        Cookies.set("cliente_nome", nomeCliente, cookieOptions);
         storage.setItem("refresh_token", response.refresh_token);
 
         // 6. Atualiza state
@@ -172,7 +186,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw error;
       }
     },
-    [scheduleRefresh],
+    [scheduleRefresh, clearAuth],
   );
 
   // Carrega sessão do storage ao iniciar

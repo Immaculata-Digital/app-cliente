@@ -30,7 +30,7 @@ class ClienteService {
    */
   async registrar(schema: string, data: ClienteRegistroData): Promise<ClienteRegistroResponse> {
     return await apiClientClientes.post<ClienteRegistroResponse>(
-      `/api/clientes/${schema}`,
+      `/clientes/${schema}`,
       data,
       { skipAuth: true }
     );

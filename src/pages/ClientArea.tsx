@@ -34,14 +34,14 @@ const ClientArea = () => {
 
   const { loading, recompensas, fetchRecompensas } = usePontosRecompensas({
     schema: MOCK_CLIENTE.schema,
-    id_usuario: user?.id || 0,
+    id_cliente: user?.clienteId || 0,
   });
 
   useEffect(() => {
-    if (!isLoading && user?.id) {
+    if (!isLoading && user?.clienteId) {
       fetchRecompensas();
     }
-  }, [isLoading, user?.id, fetchRecompensas]);
+  }, [isLoading, user?.clienteId, fetchRecompensas]);
 
   const copiarCodigo = () => {
     const codigo = recompensas?.codigo_cliente || MOCK_CLIENTE.codigo;
@@ -102,7 +102,7 @@ const ClientArea = () => {
           {/* Segunda coluna - Título centralizado */}
           <div className="text-center">
             <h1 className="text-2xl font-bold text-primary-foreground">
-              Olá, {user?.nome || MOCK_CLIENTE.nome}
+              Olá, {user?.clienteNome || user?.nome || MOCK_CLIENTE.nome}
             </h1>
           </div>
           

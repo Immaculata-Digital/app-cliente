@@ -16,10 +16,10 @@ class PontosRecompensasService {
    */
   async getRecompensas(
     schema: string,
-    id_usuario: number
+    id_cliente: number
   ): Promise<PontosRecompensasResponse> {
     const response = await apiClientClientes.get<PontosRecompensasResponse>(
-      `/api/clientes/${schema}/${id_usuario}/pontos-recompensas`
+      `/clientes/${schema}/${id_cliente}/pontos-recompensas`
     );
     return response;
   }
