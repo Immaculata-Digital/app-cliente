@@ -45,6 +45,59 @@ class PontosMovimentacaoService {
   }
 
   /**
+   * Buscar código de resgate existente por cliente e item
+   */
+  async buscarCodigoExistente(
+    schema: string,
+    id_cliente: number,
+    id_item_recompensa: number
+  ): Promise<ResgateResponse | null> {
+    try {
+      const response = await apiClientClientes.get<{
+        codigo_resgate: string;
+        resgate_utilizado: boolean;
+        id_cliente: number;
+        id_item_recompensa: number;
+        id_movimentacao: number | null;
+        saldo_atual?: number;
+        pontos?: number;
+        saldo_resultante?: number;
+      }>(
+        `/clientes/${schema}/${id_cliente}/codigos-resgate/item/${id_item_recompensa}`
+      );
+      
+      // Transformar resposta para formato ResgateResponse
+      return {
+        movimentacao: {
+          id_movimentacao: response.id_movimentacao || 0,
+          id_cliente: response.id_cliente,
+          tipo: 'DEBITO' as const,
+          pontos: response.pontos || 0,
+          saldo_resultante: response.saldo_resultante || response.saldo_atual || 0,
+          origem: 'RESGATE' as const,
+          id_loja: null,
+          id_item_recompensa: response.id_item_recompensa,
+          observacao: null,
+          schema,
+          usu_cadastro: 0,
+          dt_cadastro: new Date().toISOString(),
+        },
+        saldo_atual: response.saldo_atual || 0,
+        codigo_resgate: response.codigo_resgate,
+        resgate_utilizado: response.resgate_utilizado,
+      };
+    } catch (error: any) {
+      // Se não encontrar (404), retorna null
+      if (error?.response?.status === 404) {
+        return null;
+      }
+      // Outros erros são ignorados e retorna null
+      console.warn('Erro ao buscar código existente:', error);
+      return null;
+    }
+  }
+
+  /**
    * Resgatar recompensa gerando código
    */
   async resgatarRecompensa(

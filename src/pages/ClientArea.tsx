@@ -73,11 +73,55 @@ const ClientArea = () => {
     setModalAberto("codigo");
   };
 
-  const iniciarResgate = (item: PontosRecompensa) => {
+  const iniciarResgate = async (item: PontosRecompensa) => {
+    if (!user?.clienteId) {
+      toast({
+        variant: "destructive",
+        title: "Sessão expirada",
+        description: "Faça login novamente para continuar o resgate.",
+      });
+      return;
+    }
+
     setItemSelecionado(item);
-    setCodigoResgateGerado(null);
-    setDetalhesResgate(null);
-    setModalAberto("confirmar-resgate");
+    setResgatePendente(true);
+
+    try {
+      // Primeiro, verificar se já existe um código não utilizado
+      const codigoExistente = await pontosMovimentacaoService.buscarCodigoExistente(
+        TENANT_SCHEMA,
+        user.clienteId,
+        item.id_item_recompensa
+      );
+
+      if (codigoExistente && codigoExistente.codigo_resgate) {
+        // Se encontrou código existente, mostrar modal com o código
+        setDetalhesResgate(codigoExistente);
+        setCodigoResgateGerado(codigoExistente.codigo_resgate);
+        setContextoModal("resgate");
+        setModalAberto("codigo");
+        setShowQR(false);
+        setItemSelecionado(null);
+        
+        toast({
+          title: "Código encontrado!",
+          description: `Código de resgate: ${codigoExistente.codigo_resgate}`,
+        });
+      } else {
+        // Se não encontrou, mostrar modal de confirmação para gerar novo
+        setCodigoResgateGerado(null);
+        setDetalhesResgate(null);
+        setModalAberto("confirmar-resgate");
+      }
+    } catch (error: any) {
+      console.error("[Resgate] Erro ao buscar código existente:", error);
+      // Em caso de erro, mostrar modal de confirmação normalmente
+      setCodigoResgateGerado(null);
+      setDetalhesResgate(null);
+      setModalAberto("confirmar-resgate");
+    } finally {
+      setResgatePendente(false);
+    }
   };
 
   const confirmarResgate = async () => {
