@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
-import { Gift, Plus, Copy, X, LogOut, User, QrCode } from "lucide-react";
+import { Gift, Plus, Copy, X, LogOut, QrCode } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import QRCodeComponent from "react-qr-code";
 import { usePontosRecompensas } from "@/hooks/usePontosRecompensas";
+import { pontosMovimentacaoService } from "@/services/api-clientes";
+import type { PontosRecompensa } from "@/types/cliente-pontos-recompensas";
+import type { CreateMovimentacaoRequest, ResgateResponse } from "@/types/cliente-pontos-movimentacao";
 
 // Schema tenant padrão (multi-tenant)
 const TENANT_SCHEMA = "z_demo";
@@ -28,12 +30,14 @@ const ClientArea = () => {
   const { user, logout, isLoading } = useAuth();
   const [modalAberto, setModalAberto] = useState<ModalType>(null);
   const [contextoModal, setContextoModal] = useState<ModalContext>("resgate");
-  const [itemSelecionado, setItemSelecionado] = useState<any>(null);
+  const [itemSelecionado, setItemSelecionado] = useState<PontosRecompensa | null>(null);
   const [resgatePendente, setResgatePendente] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const [codigoResgateGerado, setCodigoResgateGerado] = useState<string | null>(null);
+  const [detalhesResgate, setDetalhesResgate] = useState<ResgateResponse | null>(null);
 
   const { loading, recompensas, fetchRecompensas } = usePontosRecompensas({
-    schema: MOCK_CLIENTE.schema,
+    schema: TENANT_SCHEMA,
     id_cliente: user?.clienteId || 0,
   });
 
@@ -43,9 +47,16 @@ const ClientArea = () => {
     }
   }, [isLoading, user?.clienteId, fetchRecompensas]);
 
+  const codigoExibido =
+    contextoModal === "resgate" && codigoResgateGerado
+      ? codigoResgateGerado
+      : recompensas?.codigo_cliente || MOCK_CLIENTE.codigo;
+
   const copiarCodigo = () => {
-    const codigo = recompensas?.codigo_cliente || MOCK_CLIENTE.codigo;
-    navigator.clipboard.writeText(codigo);
+    if (!codigoExibido) {
+      return;
+    }
+    navigator.clipboard.writeText(codigoExibido);
     toast({
       title: "Código copiado!",
       description: "O código foi copiado para a área de transferência.",
@@ -54,41 +65,74 @@ const ClientArea = () => {
 
   const abrirModalCodigo = (contexto: ModalContext) => {
     setContextoModal(contexto);
+    if (contexto !== "resgate") {
+      setCodigoResgateGerado(null);
+      setDetalhesResgate(null);
+    }
+    setShowQR(false);
     setModalAberto("codigo");
   };
 
-  const iniciarResgate = (item: any) => {
+  const iniciarResgate = (item: PontosRecompensa) => {
     setItemSelecionado(item);
+    setCodigoResgateGerado(null);
+    setDetalhesResgate(null);
     setModalAberto("confirmar-resgate");
   };
 
   const confirmarResgate = async () => {
     if (!itemSelecionado) return;
+    if (!user?.clienteId) {
+      toast({
+        variant: "destructive",
+        title: "Sessão expirada",
+        description: "Faça login novamente para continuar o resgate.",
+      });
+      return;
+    }
 
     setResgatePendente(true);
-    
-    // Simular chamada API
-    // POST /clientes/:schema/:id_cliente/pedidos-resgate
-    // Body: { id_item_recompensa, tipo: "PEQUENO", origem: "RESGATE" }
-    // Schema: TENANT_SCHEMA (z_demo)
-    console.log(`[Mock API] POST /clientes/${TENANT_SCHEMA}/${MOCK_CLIENTE.id}/pedidos-resgate`, {
-      id_item_recompensa: itemSelecionado.id,
-      tipo: itemSelecionado.tipo,
-      origem: "RESGATE"
-    });
 
-    setTimeout(() => {
-      setModalAberto(null);
-      setResgatePendente(false);
-      
+    try {
+      const resposta = await pontosMovimentacaoService.resgatarRecompensa(
+        TENANT_SCHEMA,
+        user.clienteId,
+        itemSelecionado.id_item_recompensa,
+        `Resgate de ${itemSelecionado.nome_item}`
+      );
+
+      setDetalhesResgate(resposta);
+      setCodigoResgateGerado(resposta.codigo_resgate ?? null);
+
+      await fetchRecompensas();
+
       toast({
-        title: "Resgate enviado!",
-        description: "Mostre seu código ao operador para concluir.",
+        title: "Resgate realizado!",
+        description: resposta.codigo_resgate
+          ? `Código de resgate: ${resposta.codigo_resgate}`
+          : "Resgate registrado com sucesso.",
       });
 
-      // Abrir modal de código automaticamente
-      abrirModalCodigo("resgate");
-    }, 1000);
+      setContextoModal("resgate");
+      setModalAberto("codigo");
+      setShowQR(false);
+      setItemSelecionado(null);
+    } catch (error: any) {
+      const mensagem =
+        typeof error?.message === "string" && error.message.trim().length > 0
+          ? error.message
+          : "Não foi possível concluir o resgate. Tente novamente.";
+
+      console.error("[Resgate] Erro ao confirmar resgate:", error);
+
+      toast({
+        variant: "destructive",
+        title: "Erro ao resgatar",
+        description: mensagem,
+      });
+    } finally {
+      setResgatePendente(false);
+    }
   };
 
   return (
@@ -164,11 +208,11 @@ const ClientArea = () => {
             {loading ? (
               <p className="text-muted-foreground col-span-full text-center">Carregando recompensas...</p>
             ) : recompensas?.recompensas && recompensas.recompensas.length > 0 ? (
-              recompensas.recompensas.map((item, index) => {
+              recompensas.recompensas.map((item) => {
                 const pontosInsuficientes = (recompensas.quantidade_pontos ?? 0) < item.qtd_pontos;
                 
                 return (
-                  <Card key={index} className="p-4 bg-card border-border">
+                  <Card key={item.id_item_recompensa} className="p-4 bg-card border-border">
                     <div className="flex flex-col gap-3">
                       {item.foto && (
                         <div className="aspect-video bg-muted rounded-md overflow-hidden">
@@ -205,47 +249,69 @@ const ClientArea = () => {
       </div>
 
       {/* Modal: Mostrar Código */}
-      <Dialog open={modalAberto === "codigo"} onOpenChange={() => {
-        setModalAberto(null);
-        setShowQR(false);
-      }}>
+      <Dialog
+        open={modalAberto === "codigo"}
+        onOpenChange={(open) => {
+          if (!open) {
+            setModalAberto(null);
+            setShowQR(false);
+            setCodigoResgateGerado(null);
+            setDetalhesResgate(null);
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Meu Código</DialogTitle>
+            <DialogTitle>
+              {contextoModal === "resgate" ? "Código de Resgate" : "Meu Código"}
+            </DialogTitle>
             <DialogDescription>
               {contextoModal === "resgate"
-                ? "Mostre este número ao operador para concluir o resgate."
+                ? "Mostre este código ao operador para concluir o resgate do seu item."
                 : "Informe este número ao operador para creditar seus pontos."}
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col items-center justify-center py-8 space-y-6">
-            {showQR ? (
+            {contextoModal === "resgate" ? (
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-2">Código de Resgate</p>
+                <p className="text-5xl font-mono font-bold text-foreground tracking-wider">
+                  {codigoExibido}
+                </p>
+                {detalhesResgate && (
+                  <p className="text-xs text-muted-foreground mt-4">
+                    Saldo atual após resgate:{" "}
+                    <span className="font-semibold text-foreground">
+                      {detalhesResgate.saldo_atual.toLocaleString()} pontos
+                    </span>
+                  </p>
+                )}
+              </div>
+            ) : showQR ? (
               <div className="bg-white p-4 rounded-lg">
-                <QRCodeComponent
-                  value={recompensas?.codigo_cliente || MOCK_CLIENTE.codigo}
-                  size={200}
-                  level="H"
-                />
+                <QRCodeComponent value={codigoExibido} size={200} level="H" />
               </div>
             ) : (
               <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-2">Código do Cliente</p>
                 <p className="text-5xl font-mono font-bold text-foreground tracking-wider">
-                  {recompensas?.codigo_cliente || MOCK_CLIENTE.codigo}
+                  {codigoExibido}
                 </p>
               </div>
             )}
             
             <div className="flex gap-2 w-full">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => setShowQR(!showQR)}
-              >
-                <QrCode className="h-4 w-4 mr-2" />
-                {showQR ? "Mostrar Código" : "Exibir QR Code"}
-              </Button>
-              {!showQR && (
+              {contextoModal !== "resgate" && (
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowQR(!showQR)}
+                >
+                  <QrCode className="h-4 w-4 mr-2" />
+                  {showQR ? "Mostrar Código" : "Exibir QR Code"}
+                </Button>
+              )}
+              {(!showQR || contextoModal === "resgate") && (
                 <Button
                   variant="outline"
                   className="flex-1"
@@ -263,6 +329,8 @@ const ClientArea = () => {
               onClick={() => {
                 setModalAberto(null);
                 setShowQR(false);
+                setCodigoResgateGerado(null);
+                setDetalhesResgate(null);
               }}
             >
               <X className="h-4 w-4 mr-2" />

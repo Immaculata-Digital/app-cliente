@@ -136,13 +136,20 @@ export class HttpClient {
       // Remove params do config pois já foram adicionados à URL
       const { params, ...fetchConfig } = finalConfig;
 
+      // Garante que o Content-Type seja application/json quando há body
+      const headers: HeadersInit = {
+        ...fetchConfig.headers,
+      };
+      
+      // Se houver body e não houver Content-Type definido, define como application/json
+      if (fetchConfig.body && !headers['Content-Type'] && !headers['content-type']) {
+        headers['Content-Type'] = 'application/json';
+      }
+
       // Faz a requisição
       const response = await fetch(url, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...fetchConfig.headers,
-        },
         ...fetchConfig,
+        headers,
       });
 
       // Verifica se houve erro HTTP
@@ -179,6 +186,10 @@ export class HttpClient {
       ...config,
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
+      headers: {
+        'Content-Type': 'application/json',
+        ...config?.headers,
+      },
     });
   }
 

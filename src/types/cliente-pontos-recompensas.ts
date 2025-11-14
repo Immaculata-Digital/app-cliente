@@ -6,8 +6,9 @@
  * Interface da recompensa
  */
 export interface PontosRecompensa {
+  id_item_recompensa: number;
   nome_item: string;
-  foto: string; // Base64 ou URL da imagem
+  foto: string | null; // Base64 ou URL da imagem
   qtd_pontos: number;
 }
 

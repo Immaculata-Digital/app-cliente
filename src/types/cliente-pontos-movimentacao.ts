@@ -60,6 +60,30 @@ export interface MovimentacaoResponse {
   saldo_atual: number;
 }
 
+export interface ResgateMovimentacao {
+  id_movimentacao: number;
+  id_cliente: number;
+  tipo: TipoMovimentacao;
+  pontos: number;
+  saldo_resultante: number;
+  origem: OrigemMovimentacao;
+  id_loja: number | null;
+  id_item_recompensa: number | null;
+  observacao?: string | null;
+  schema: string;
+  usu_cadastro: number;
+  dt_cadastro: string;
+  updatedAt?: string;
+  id_mov_ref?: number | null;
+}
+
+export interface ResgateResponse {
+  movimentacao: ResgateMovimentacao;
+  saldo_atual: number;
+  codigo_resgate?: string;
+  resgate_utilizado?: boolean | null;
+}
+
 /**
  * Filtros para busca de extrato
  */

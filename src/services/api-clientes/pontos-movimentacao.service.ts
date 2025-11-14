@@ -17,6 +17,7 @@ import type {
   ExtratoFilters,
   ClientePontosMovimentacao,
   Cliente,
+  ResgateResponse,
 } from '@/types/cliente-pontos-movimentacao';
 
 /**
@@ -40,6 +41,32 @@ class PontosMovimentacaoService {
     } catch (error: any) {
       console.warn('⚠️ API indisponível, usando mock');
       return await pontosMovimentacaoMock.createMovimentacao(schema, id_cliente, data);
+    }
+  }
+
+  /**
+   * Resgatar recompensa gerando código
+   */
+  async resgatarRecompensa(
+    schema: string,
+    id_cliente: number,
+    id_item_recompensa: number,
+    observacao?: string
+  ): Promise<ResgateResponse> {
+    try {
+      const response = await apiClientClientes.post<ResgateResponse>(
+        `/clientes/${schema}/${id_cliente}/debitar-pontos`,
+        {
+          id_item_recompensa,
+          observacao,
+        }
+      );
+      return response;
+    } catch (error: any) {
+      const message =
+        error?.message ||
+        'Não foi possível concluir o resgate. Tente novamente em instantes.';
+      throw new Error(message);
     }
   }
 
