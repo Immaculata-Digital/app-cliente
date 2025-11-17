@@ -21,11 +21,12 @@ const Registro = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isValid },
     setValue,
     watch,
   } = useForm<RegistroFormData>({
     resolver: zodResolver(registroSchema),
+    mode: "onChange",
     defaultValues: {
       aceite_termos: false,
       sexo: undefined,
@@ -208,7 +209,7 @@ const Registro = () => {
             </div>
             {errors.aceite_termos && <p className="text-sm text-destructive">{errors.aceite_termos.message}</p>}
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button type="submit" className="w-full" disabled={isSubmitting || !isValid}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
