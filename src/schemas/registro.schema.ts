@@ -28,11 +28,12 @@ export const registroSchema = z.object({
     .refine(val => val === true, "Você deve aceitar os termos de uso"),
   
   senha: z.string()
-    .min(8, "Senha deve ter pelo menos 8 caracteres")
+    .min(10, "Senha deve ter pelo menos 10 caracteres")
     .max(100, "Senha deve ter no máximo 100 caracteres")
     .regex(/[A-Z]/, "Senha deve conter pelo menos uma letra maiúscula")
     .regex(/[a-z]/, "Senha deve conter pelo menos uma letra minúscula")
-    .regex(/[0-9]/, "Senha deve conter pelo menos um número"),
+    .regex(/[0-9]/, "Senha deve conter pelo menos um número")
+    .regex(/[!@#$%^&*(),.?":{}|<>]/, "Senha deve conter pelo menos um caractere especial"),
   
   confirmar_senha: z.string()
 }).refine((data) => data.senha === data.confirmar_senha, {
