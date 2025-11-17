@@ -140,10 +140,10 @@ const Registro = () => {
 
             <Input
               label="WhatsApp"
+              type="tel"
               {...register("whatsapp")}
               error={errors.whatsapp?.message}
               placeholder="+55DDD000000000"
-              inputMode="numeric"
               onChange={(e) => {
                 const formatted = formatWhatsApp(e.target.value);
                 setValue("whatsapp", formatted);
@@ -152,10 +152,10 @@ const Registro = () => {
 
             <Input
               label="CEP"
+              type="tel"
               {...register("cep")}
               error={errors.cep?.message}
               placeholder="00000-000"
-              inputMode="numeric"
               onChange={(e) => {
                 const formatted = formatCEP(e.target.value);
                 setValue("cep", formatted);
