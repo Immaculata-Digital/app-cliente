@@ -189,7 +189,7 @@ const ClientArea = () => {
           
           {/* Segunda coluna - Título centralizado */}
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-primary-foreground">
+            <h1 className="text-lg sm:text-xl font-bold text-primary-foreground truncate px-2">
               Olá, {user?.clienteNome || user?.nome || MOCK_CLIENTE.nome}
             </h1>
           </div>

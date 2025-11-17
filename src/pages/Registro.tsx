@@ -87,9 +87,21 @@ const Registro = () => {
 
       navigate("/login");
     } catch (error: any) {
+      const errorData = error.response?.data;
+      let errorMessage = "Ocorreu um erro ao realizar o cadastro";
+      
+      // Se tiver details (array de erros), formatar adequadamente
+      if (errorData?.details && Array.isArray(errorData.details)) {
+        errorMessage = errorData.details.join(", ");
+      } else if (errorData?.error) {
+        errorMessage = errorData.error;
+      } else if (errorData?.message) {
+        errorMessage = errorData.message;
+      }
+
       toast({
         title: "Erro ao cadastrar",
-        description: error.response?.data?.message || "Ocorreu um erro ao realizar o cadastro",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -131,6 +143,7 @@ const Registro = () => {
               {...register("whatsapp")}
               error={errors.whatsapp?.message}
               placeholder="+55DDD000000000"
+              inputMode="numeric"
               onChange={(e) => {
                 const formatted = formatWhatsApp(e.target.value);
                 setValue("whatsapp", formatted);
@@ -142,6 +155,7 @@ const Registro = () => {
               {...register("cep")}
               error={errors.cep?.message}
               placeholder="00000-000"
+              inputMode="numeric"
               onChange={(e) => {
                 const formatted = formatCEP(e.target.value);
                 setValue("cep", formatted);
