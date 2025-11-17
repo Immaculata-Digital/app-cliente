@@ -183,19 +183,16 @@ const ClientArea = () => {
     <div className="min-h-screen bg-gradient-light">
       {/* Header com Logout */}
       <header className="bg-gradient-primary p-6">
-        <div className="max-w-4xl mx-auto grid grid-cols-3 items-center">
-          {/* Primeira coluna vazia para balanceamento */}
-          <div></div>
-          
-          {/* Segunda coluna - Título centralizado */}
-          <div className="text-center">
-            <h1 className="text-lg sm:text-xl font-bold text-primary-foreground truncate px-2">
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+          {/* Título - alinhado à esquerda no mobile, centralizado no desktop */}
+          <div className="flex-1 md:text-center">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-primary-foreground">
               Olá, {user?.clienteNome || user?.nome || MOCK_CLIENTE.nome}
             </h1>
           </div>
           
-          {/* Terceira coluna - Botão alinhado à direita */}
-          <div className="flex justify-end">
+          {/* Botão alinhado à direita */}
+          <div className="flex-shrink-0">
             <Button
               variant="ghost"
               size="sm"
