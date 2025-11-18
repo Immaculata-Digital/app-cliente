@@ -97,19 +97,11 @@ const Login = () => {
           {/* Header com gradiente */}
           <div className="bg-gradient-primary p-8 text-center">
             {/* Logo */}
-            {configuracoes?.logo_url ? (
+            {configuracoes?.logo_base64 && (
               <div className="mb-4 flex justify-center">
                 <img 
-                  src={configuracoes.logo_url} 
+                  src={`data:image/png;base64,${configuracoes.logo_base64}`}
                   alt="Logo" 
-                  className="h-16 w-auto object-contain"
-                />
-              </div>
-            ) : (
-              <div className="mb-4 flex justify-center">
-                <img 
-                  src="https://concordiachapeco.com.br/wp-content/uploads/2021/01/logo-concordia-branco.png" 
-                  alt="Logo Concordia" 
                   className="h-16 w-auto object-contain"
                 />
               </div>

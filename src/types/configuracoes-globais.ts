@@ -4,7 +4,7 @@
 
 export interface ConfiguracoesGlobais {
   id_configuracao_global?: number;
-  logo_url?: string;
+  logo_base64?: string;
   cor_primaria?: string;
   cor_secundaria?: string;
   cor_texto?: string;
@@ -15,7 +15,7 @@ export interface ConfiguracoesGlobais {
 }
 
 export interface UpdateConfiguracoesGlobaisRequest {
-  logo_url?: string;
+  logo_base64?: string;
   cor_primaria?: string;
   cor_secundaria?: string;
   cor_texto?: string;
