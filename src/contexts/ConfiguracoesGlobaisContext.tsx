@@ -120,19 +120,25 @@ export function ConfiguracoesGlobaisProvider({ children }: { children: ReactNode
     setIsLoading(true);
     try {
       const schema = getSchemaFromHostname();
+      console.log('[ConfiguracoesGlobais] Schema detectado:', schema);
+      
       const configs = await configuracoesGlobaisService.getConfiguracoes(schema);
+      console.log('[ConfiguracoesGlobais] Configurações recebidas:', configs);
       
       if (configs && configs.length > 0) {
         const config = configs[0];
+        console.log('[ConfiguracoesGlobais] Primeira configuração:', config);
+        console.log('[ConfiguracoesGlobais] Logo base64 presente?', !!config.logo_base64);
         setConfiguracoes(config);
         applyTheme(config);
       } else {
+        console.log('[ConfiguracoesGlobais] Nenhuma configuração encontrada, usando padrão');
         // Aplica configuração padrão
         setConfiguracoes(DEFAULT_CONFIG);
         applyTheme(DEFAULT_CONFIG);
       }
     } catch (error) {
-      console.error('Erro ao carregar configurações globais:', error);
+      console.error('[ConfiguracoesGlobais] Erro ao carregar configurações globais:', error);
       // Em caso de erro, aplica configuração padrão
       setConfiguracoes(DEFAULT_CONFIG);
       applyTheme(DEFAULT_CONFIG);
