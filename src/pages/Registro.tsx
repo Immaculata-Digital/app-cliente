@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { registroSchema, type RegistroFormData } from "@/schemas/registro.schema";
 import { clienteService } from "@/services/api-clientes/cliente.service";
+import { pontosRecompensasService } from "@/services/api-clientes/pontos-recompensas.service";
 import { PasswordInput } from "@/components/ds/PasswordInput";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ds/Input";
@@ -12,11 +13,14 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { RecompensasCarousel } from "@/components/RecompensasCarousel";
+import type { PontosRecompensa } from "@/types/cliente-pontos-recompensas";
 
 const Registro = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [itensRecompensa, setItensRecompensa] = useState<PontosRecompensa[]>([]);
 
   const {
     register,
@@ -47,6 +51,22 @@ const Registro = () => {
       navigate("/login");
     }
   }, [searchParams, navigate, toast]);
+
+  // Buscar itens de recompensa disponíveis
+  useEffect(() => {
+    const buscarItens = async () => {
+      try {
+        // Usando o schema padrão "z_demo" (mesmo usado no registro)
+        const itens = await pontosRecompensasService.getItensDisponiveis("z_demo");
+        setItensRecompensa(itens);
+      } catch (error) {
+        // Silenciosamente ignora erros ao buscar itens (não é crítico)
+        console.error("Erro ao buscar itens de recompensa:", error);
+      }
+    };
+
+    buscarItens();
+  }, []);
 
   const formatWhatsApp = (value: string) => {
     const numbers = value.replace(/\D/g, "");
@@ -110,7 +130,7 @@ const Registro = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md md:max-w-4xl">
         <div className="bg-card rounded-2xl shadow-lg border border-border overflow-hidden">
           {/* Header com gradiente */}
           <div className="bg-gradient-primary p-8 text-center">
@@ -118,82 +138,96 @@ const Registro = () => {
             <p className="text-primary-foreground/90">Preencha os dados para se cadastrar</p>
           </div>
 
+          {/* Carrossel de recompensas */}
+          {itensRecompensa.length > 0 && (
+            <div className="px-8 pt-6">
+              <RecompensasCarousel itens={itensRecompensa} />
+            </div>
+          )}
+
           <form
             onSubmit={handleSubmit(onSubmit)}
             className="p-8 space-y-6"
             role="form"
             aria-label="Formulário de Cadastro"
           >
-            <Input
-              label="Nome Completo"
-              {...register("nome_completo")}
-              error={errors.nome_completo?.message}
-              placeholder="Digite seu nome completo"
-            />
-
-            <Input
-              label="E-mail"
-              type="email"
-              {...register("email")}
-              error={errors.email?.message}
-              placeholder="seu@email.com"
-            />
-
-            <Input
-              label="WhatsApp"
-              type="tel"
-              {...register("whatsapp")}
-              error={errors.whatsapp?.message}
-              placeholder="+55DDD000000000"
-              onChange={(e) => {
-                const formatted = formatWhatsApp(e.target.value);
-                setValue("whatsapp", formatted);
-              }}
-            />
-
-            <Input
-              label="CEP"
-              type="tel"
-              {...register("cep")}
-              error={errors.cep?.message}
-              placeholder="00000-000"
-              onChange={(e) => {
-                const formatted = formatCEP(e.target.value);
-                setValue("cep", formatted);
-              }}
-            />
-
-            <div className="space-y-2">
-              <Label>Sexo</Label>
-              <Select value={sexo} onValueChange={(value) => setValue("sexo", value as "M" | "F" | "O")}>
-                <SelectTrigger className={errors.sexo ? "border-destructive" : ""}>
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="M">Masculino</SelectItem>
-                  <SelectItem value="F">Feminino</SelectItem>
-                  <SelectItem value="O">Outro</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.sexo && <p className="text-sm text-destructive">{errors.sexo.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Senha</Label>
-              <PasswordInput {...register("senha")} error={errors.senha?.message} placeholder="Digite sua senha" />
-              {errors.senha && <p className="text-sm text-destructive">{errors.senha.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Confirmar Senha</Label>
-              <PasswordInput
-                {...register("confirmar_senha")}
-                error={errors.confirmar_senha?.message}
-                placeholder="Digite sua senha novamente"
+            {/* Grid responsivo: 1 coluna no mobile, 2 colunas no desktop */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Input
+                label="Nome Completo"
+                {...register("nome_completo")}
+                error={errors.nome_completo?.message}
+                placeholder="Digite seu nome completo"
               />
-              {errors.confirmar_senha && <p className="text-sm text-destructive">{errors.confirmar_senha.message}</p>}
+
+              <Input
+                label="E-mail"
+                type="email"
+                {...register("email")}
+                error={errors.email?.message}
+                placeholder="seu@email.com"
+              />
+
+              <Input
+                label="WhatsApp"
+                type="tel"
+                {...register("whatsapp")}
+                error={errors.whatsapp?.message}
+                placeholder="+55DDD000000000"
+                onChange={(e) => {
+                  const formatted = formatWhatsApp(e.target.value);
+                  setValue("whatsapp", formatted);
+                }}
+              />
+
+              <Input
+                label="CEP"
+                type="tel"
+                {...register("cep")}
+                error={errors.cep?.message}
+                placeholder="00000-000"
+                onChange={(e) => {
+                  const formatted = formatCEP(e.target.value);
+                  setValue("cep", formatted);
+                }}
+              />
+
+              <div className="space-y-2">
+                <Label>Sexo</Label>
+                <Select value={sexo} onValueChange={(value) => setValue("sexo", value as "M" | "F" | "O")}>
+                  <SelectTrigger className={errors.sexo ? "border-destructive" : ""}>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="M">Masculino</SelectItem>
+                    <SelectItem value="F">Feminino</SelectItem>
+                    <SelectItem value="O">Outro</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.sexo && <p className="text-sm text-destructive">{errors.sexo.message}</p>}
+              </div>
+
+              {/* Espaço vazio para manter alinhamento no desktop */}
+              <div className="hidden md:block"></div>
+
+              <div className="space-y-2">
+                <Label>Senha</Label>
+                <PasswordInput {...register("senha")} error={errors.senha?.message} placeholder="Digite sua senha" />
+                {errors.senha && <p className="text-sm text-destructive">{errors.senha.message}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label>Confirmar Senha</Label>
+                <PasswordInput
+                  {...register("confirmar_senha")}
+                  error={errors.confirmar_senha?.message}
+                  placeholder="Digite sua senha novamente"
+                />
+                {errors.confirmar_senha && <p className="text-sm text-destructive">{errors.confirmar_senha.message}</p>}
+              </div>
             </div>
 
+            {/* Checkbox e botão ocupam toda a largura */}
             <div className="flex items-start space-x-2">
               <Checkbox
                 id="aceite_termos"
