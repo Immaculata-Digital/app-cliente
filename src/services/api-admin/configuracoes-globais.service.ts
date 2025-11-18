@@ -7,6 +7,11 @@
 import { apiClientAdmin } from '../api-client/http-client.factory';
 import type { ConfiguracoesGlobais, UpdateConfiguracoesGlobaisRequest } from '@/types/configuracoes-globais';
 
+interface ConfiguracoesGlobaisResponse {
+  itens: ConfiguracoesGlobais[];
+  total: number;
+}
+
 /**
  * Serviço de configurações globais
  */
@@ -15,7 +20,8 @@ class ConfiguracoesGlobaisService {
    * Lista configurações do schema
    */
   async getConfiguracoes(schema: string): Promise<ConfiguracoesGlobais[]> {
-    return await apiClientAdmin.get<ConfiguracoesGlobais[]>(`/${schema}/configuracoes-globais`);
+    const response = await apiClientAdmin.get<ConfiguracoesGlobaisResponse>(`/${schema}/configuracoes-globais`);
+    return response.itens || [];
   }
 
   /**
