@@ -23,6 +23,15 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Debug: verificar configurações
+  useEffect(() => {
+    console.log('[Login] Configurações atuais:', configuracoes);
+    console.log('[Login] Logo base64 presente?', !!configuracoes?.logo_base64);
+    if (configuracoes?.logo_base64) {
+      console.log('[Login] Primeiros 100 chars do logo:', configuracoes.logo_base64.substring(0, 100));
+    }
+  }, [configuracoes]);
+
   const {
     register,
     handleSubmit,
