@@ -109,7 +109,7 @@ const Login = () => {
             {configuracoes?.logo_base64 && (
               <div className="mb-4 flex justify-center">
                 <img 
-                  src={`data:image/png;base64,${configuracoes.logo_base64}`}
+                  src={configuracoes.logo_base64}
                   alt="Logo" 
                   className="h-16 w-auto object-contain"
                 />
