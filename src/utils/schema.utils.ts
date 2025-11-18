@@ -2,21 +2,14 @@
  * Utilidades para determinar o schema baseado no subdomínio
  */
 
-const DEV_SCHEMAS = [
-  'preview--app-admin-1.lovable',
-  'homolog-app-admin',
-  'localhost',
-  '127.0.0.1',
-];
-
 const DEFAULT_SCHEMA = 'z_demo';
 
 /**
  * Determina o schema baseado no hostname atual
  * 
  * Regras:
- * - Se for preview--app-admin-1.lovable, homolog-app-admin ou localhost: usa z_demo
- * - Se tiver subdomínio: usa o subdomínio como schema
+ * - Se for preview--, *.lovable.*, *.lovableproject.*, homolog-app-admin ou localhost: usa z_demo
+ * - Se tiver subdomínio válido: usa o subdomínio como schema
  * - Caso contrário: usa z_demo
  */
 export function getSchemaFromHostname(): string {
@@ -26,8 +19,15 @@ export function getSchemaFromHostname(): string {
 
   const hostname = window.location.hostname;
 
-  // Verifica se é um dos ambientes de desenvolvimento
-  if (DEV_SCHEMAS.some(schema => hostname.includes(schema))) {
+  // Verifica se é ambiente de desenvolvimento/preview
+  if (
+    hostname.startsWith('preview--') ||
+    hostname.includes('.lovable') ||
+    hostname.includes('.lovableproject.') ||
+    hostname.includes('homolog-app-admin') ||
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1'
+  ) {
     return DEFAULT_SCHEMA;
   }
 
@@ -56,5 +56,12 @@ export function isDevMode(): boolean {
   }
 
   const hostname = window.location.hostname;
-  return DEV_SCHEMAS.some(schema => hostname.includes(schema));
+  return (
+    hostname.startsWith('preview--') ||
+    hostname.includes('.lovable') ||
+    hostname.includes('.lovableproject.') ||
+    hostname.includes('homolog-app-admin') ||
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1'
+  );
 }
