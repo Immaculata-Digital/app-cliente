@@ -35,6 +35,7 @@ const ClientArea = () => {
   const [showQR, setShowQR] = useState(false);
   const [codigoResgateGerado, setCodigoResgateGerado] = useState<string | null>(null);
   const [detalhesResgate, setDetalhesResgate] = useState<ResgateResponse | null>(null);
+  const [resgateNaoRetiraLoja, setResgateNaoRetiraLoja] = useState(false);
 
   const { loading, recompensas, fetchRecompensas } = usePontosRecompensas({
     schema: TENANT_SCHEMA,
@@ -68,6 +69,7 @@ const ClientArea = () => {
     if (contexto !== "resgate") {
       setCodigoResgateGerado(null);
       setDetalhesResgate(null);
+      setResgateNaoRetiraLoja(false);
     }
     setShowQR(false);
     setModalAberto("codigo");
@@ -84,6 +86,7 @@ const ClientArea = () => {
     }
 
     setItemSelecionado(item);
+    setResgateNaoRetiraLoja(Boolean(item.nao_retirar_loja));
     setResgatePendente(true);
 
     try {
@@ -150,14 +153,24 @@ const ClientArea = () => {
 
       await fetchRecompensas();
 
-      toast({
-        title: "Resgate realizado!",
-        description: resposta.codigo_resgate
+      const itemEhNaoRetira = Boolean(itemSelecionado?.nao_retirar_loja);
+      const contatoComFranquia = itemEhNaoRetira || Boolean(resposta.solicitacao_enviada);
+      const tituloToast = contatoComFranquia ? "Solicitação enviada!" : "Resgate realizado!";
+      const descricaoToast = contatoComFranquia
+        ? `A franquia recebeu sua solicitação e entrará em contato em breve.${
+            resposta.codigo_resgate ? ` Guarde o código ${resposta.codigo_resgate}.` : ""
+          }`
+        : resposta.codigo_resgate
           ? `Código de resgate: ${resposta.codigo_resgate}`
-          : "Resgate registrado com sucesso.",
+          : "Resgate registrado com sucesso.";
+
+      toast({
+        title: tituloToast,
+        description: descricaoToast,
       });
 
       setContextoModal("resgate");
+      setResgateNaoRetiraLoja(itemEhNaoRetira);
       setModalAberto("codigo");
       setShowQR(false);
       setItemSelecionado(null);
@@ -251,6 +264,7 @@ const ClientArea = () => {
             ) : recompensas?.recompensas && recompensas.recompensas.length > 0 ? (
               recompensas.recompensas.map((item) => {
                 const pontosInsuficientes = (recompensas.quantidade_pontos ?? 0) < item.qtd_pontos;
+                const possuiCodigoPendente = Boolean(item.codigo_resgate_pendente);
                 
                 return (
                   <Card key={item.id_item_recompensa} className="p-4 bg-card border-border">
@@ -276,7 +290,11 @@ const ClientArea = () => {
                         disabled={pontosInsuficientes}
                         onClick={() => iniciarResgate(item)}
                       >
-                        {pontosInsuficientes ? "Pontos insuficientes" : "Resgatar"}
+                        {pontosInsuficientes
+                          ? "Pontos insuficientes"
+                          : possuiCodigoPendente
+                            ? "Ver código"
+                            : "Resgatar"}
                       </Button>
                     </div>
                   </Card>
@@ -298,6 +316,7 @@ const ClientArea = () => {
             setShowQR(false);
             setCodigoResgateGerado(null);
             setDetalhesResgate(null);
+            setResgateNaoRetiraLoja(false);
           }
         }}
       >
@@ -308,7 +327,9 @@ const ClientArea = () => {
             </DialogTitle>
             <DialogDescription>
               {contextoModal === "resgate"
-                ? "Mostre este código ao operador para concluir o resgate do seu item."
+                ? resgateNaoRetiraLoja
+                  ? "Recebemos sua solicitação! A franquia responsável entrará em contato e usará este código como referência do seu pedido."
+                  : "Mostre este código ao operador para concluir o resgate do seu item."
                 : "Informe este número ao operador para creditar seus pontos."}
             </DialogDescription>
           </DialogHeader>
@@ -382,12 +403,23 @@ const ClientArea = () => {
       </Dialog>
 
       {/* Modal: Confirmar Resgate */}
-      <Dialog open={modalAberto === "confirmar-resgate"} onOpenChange={() => setModalAberto(null)}>
+      <Dialog
+        open={modalAberto === "confirmar-resgate"}
+        onOpenChange={(open) => {
+          if (!open) {
+            setModalAberto(null);
+            setItemSelecionado(null);
+            setResgateNaoRetiraLoja(false);
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirmar Resgate</DialogTitle>
             <DialogDescription>
-              Você está prestes a resgatar um item. Esta ação criará uma solicitação pendente.
+              {resgateNaoRetiraLoja
+                ? "Este item não pode ser retirado diretamente na loja. Ao confirmar, enviaremos uma solicitação para a franquia responsável e ela entrará em contato com você."
+                : "Você está prestes a resgatar um item. Esta ação criará uma solicitação pendente."}
             </DialogDescription>
           </DialogHeader>
           {itemSelecionado && (
@@ -398,14 +430,29 @@ const ClientArea = () => {
                   {itemSelecionado.qtd_pontos.toLocaleString()} pontos
                 </p>
               </div>
+              {resgateNaoRetiraLoja && (
+                <div className="bg-amber-50 border border-amber-200 text-amber-900 text-sm rounded-md p-3 mb-4">
+                  <strong className="block font-semibold mb-1">Funcionamento deste resgate</strong>
+                  <span>
+                    Confirmando abaixo, geraremos um código e notificaremos a franquia. Ela entrará em contato com
+                    você para combinar o envio/retirada do item.
+                  </span>
+                </div>
+              )}
               <p className="text-sm text-muted-foreground mb-4">
-                Após confirmar, você receberá um código para mostrar ao operador na loja.
+                {resgateNaoRetiraLoja
+                  ? "Guarde o código que será exibido em seguida. Ele será utilizado pela franquia para acompanhar sua solicitação."
+                  : "Após confirmar, você receberá um código para mostrar ao operador na loja."}
               </p>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   className="flex-1"
-                  onClick={() => setModalAberto(null)}
+                  onClick={() => {
+                    setModalAberto(null);
+                    setItemSelecionado(null);
+                    setResgateNaoRetiraLoja(false);
+                  }}
                   disabled={resgatePendente}
                 >
                   Cancelar

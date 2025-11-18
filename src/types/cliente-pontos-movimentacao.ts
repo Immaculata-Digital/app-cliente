@@ -82,6 +82,7 @@ export interface ResgateResponse {
   saldo_atual: number;
   codigo_resgate?: string;
   resgate_utilizado?: boolean | null;
+  solicitacao_enviada?: boolean;
 }
 
 /**

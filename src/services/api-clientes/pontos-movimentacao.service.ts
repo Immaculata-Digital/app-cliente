@@ -62,6 +62,7 @@ class PontosMovimentacaoService {
         saldo_atual?: number;
         pontos?: number;
         saldo_resultante?: number;
+        solicitacao_enviada?: boolean;
       }>(
         `/clientes/${schema}/${id_cliente}/codigos-resgate/item/${id_item_recompensa}`
       );
@@ -85,6 +86,7 @@ class PontosMovimentacaoService {
         saldo_atual: response.saldo_atual || 0,
         codigo_resgate: response.codigo_resgate,
         resgate_utilizado: response.resgate_utilizado,
+        solicitacao_enviada: response.solicitacao_enviada ?? false,
       };
     } catch (error: any) {
       // Se não encontrar (404), retorna null
