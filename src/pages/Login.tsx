@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, LogIn, Loader2, Key, Copy, Info } from "lucide-react";
 import { loginSchema, LoginFormData } from "@/schemas/auth.schema";
 import { useAuth } from "@/contexts/AuthContext";
+import { useConfiguracoesGlobais } from "@/contexts/ConfiguracoesGlobaisContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ds/Button";
 import { Switch } from "@/components/ui/switch";
@@ -17,6 +18,7 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, isAuthenticated, isLoading } = useAuth();
+  const { configuracoes } = useConfiguracoesGlobais();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -94,6 +96,24 @@ const Login = () => {
         <div className="bg-card rounded-2xl shadow-lg border border-border overflow-hidden">
           {/* Header com gradiente */}
           <div className="bg-gradient-primary p-8 text-center">
+            {/* Logo */}
+            {configuracoes?.logo_url ? (
+              <div className="mb-4 flex justify-center">
+                <img 
+                  src={configuracoes.logo_url} 
+                  alt="Logo" 
+                  className="h-16 w-auto object-contain"
+                />
+              </div>
+            ) : (
+              <div className="mb-4 flex justify-center">
+                <img 
+                  src="https://concordiachapeco.com.br/wp-content/uploads/2021/01/logo-concordia-branco.png" 
+                  alt="Logo Concordia" 
+                  className="h-16 w-auto object-contain"
+                />
+              </div>
+            )}
             <h1 className="text-3xl font-bold text-primary-foreground mb-2">Sistema de Fidelidade</h1>
             <p className="text-primary-foreground/90">Acesso aos seus pontos</p>
           </div>

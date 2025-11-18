@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ConfiguracoesGlobaisProvider } from "@/contexts/ConfiguracoesGlobaisContext";
 import { AppRoutes } from "@/routes";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
@@ -20,13 +21,15 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <AppRoutes />
-          </TooltipProvider>
-        </AuthProvider>
+        <ConfiguracoesGlobaisProvider>
+          <AuthProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <AppRoutes />
+            </TooltipProvider>
+          </AuthProvider>
+        </ConfiguracoesGlobaisProvider>
       </BrowserRouter>
     </QueryClientProvider>
   </ErrorBoundary>
