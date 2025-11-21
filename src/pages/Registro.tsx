@@ -40,6 +40,10 @@ const Registro = () => {
   const sexo = watch("sexo");
   const aceiteTermos = watch("aceite_termos");
 
+  const handleDocumentoPendente = () => {
+    alert("documento pendente");
+  };
+
   useEffect(() => {
     const idLoja = searchParams.get("id_loja");
     if (!idLoja) {
@@ -228,7 +232,7 @@ const Registro = () => {
             </div>
 
             {/* Checkbox e botão ocupam toda a largura */}
-            <div className="flex items-start space-x-2">
+            <div className="flex items-center gap-3">
               <Checkbox
                 id="aceite_termos"
                 checked={aceiteTermos}
@@ -236,9 +240,16 @@ const Registro = () => {
               />
               <Label
                 htmlFor="aceite_termos"
-                className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="text-sm leading-relaxed peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                Aceito os termos de uso e política de privacidade
+                Aceito os{" "}
+                <button type="button" className="text-primary underline" onClick={handleDocumentoPendente}>
+                  termos de política de privacidade
+                </button>{" "}
+                e as{" "}
+                <button type="button" className="text-primary underline" onClick={handleDocumentoPendente}>
+                  regras do sistema de fidelidade
+                </button>
               </Label>
             </div>
             {errors.aceite_termos && <p className="text-sm text-destructive">{errors.aceite_termos.message}</p>}
