@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { registroSchema, type RegistroFormData } from "@/schemas/registro.schema";
 import { clienteService } from "@/services/api-clientes/cliente.service";
@@ -15,12 +15,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { RecompensasCarousel } from "@/components/RecompensasCarousel";
 import type { PontosRecompensa } from "@/types/cliente-pontos-recompensas";
+import { useConfiguracoesGlobais } from "@/contexts/ConfiguracoesGlobaisContext";
 
 const Registro = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [itensRecompensa, setItensRecompensa] = useState<PontosRecompensa[]>([]);
+  const { configuracoes } = useConfiguracoesGlobais();
 
   const {
     register,
@@ -133,145 +135,219 @@ const Registro = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md md:max-w-4xl">
-        <div className="bg-card rounded-2xl shadow-lg border border-border overflow-hidden">
-          {/* Header com gradiente */}
-          <div className="bg-gradient-primary p-8 text-center">
-            <h1 className="text-3xl font-bold text-primary-foreground mb-2">Criar Conta</h1>
-            <p className="text-primary-foreground/90">Preencha os dados para se cadastrar</p>
-          </div>
-
-          {/* Carrossel de recompensas */}
-          {itensRecompensa.length > 0 && (
-            <div className="px-8 pt-6">
-              <RecompensasCarousel itens={itensRecompensa} />
-            </div>
-          )}
-
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="p-8 space-y-6"
-            role="form"
-            aria-label="Formulário de Cadastro"
-          >
-            {/* Grid responsivo: 1 coluna no mobile, 2 colunas no desktop */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input
-                label="Nome Completo"
-                {...register("nome_completo")}
-                error={errors.nome_completo?.message}
-                placeholder="Digite seu nome completo"
-              />
-
-              <Input
-                label="E-mail"
-                type="email"
-                {...register("email")}
-                error={errors.email?.message}
-                placeholder="seu@email.com"
-              />
-
-              <Input
-                label="WhatsApp"
-                type="tel"
-                {...register("whatsapp")}
-                error={errors.whatsapp?.message}
-                placeholder="+55DDD000000000"
-                onChange={(e) => {
-                  const formatted = formatWhatsApp(e.target.value);
-                  setValue("whatsapp", formatted);
-                }}
-              />
-
-              <Input
-                label="CEP"
-                type="tel"
-                {...register("cep")}
-                error={errors.cep?.message}
-                placeholder="00000-000"
-                onChange={(e) => {
-                  const formatted = formatCEP(e.target.value);
-                  setValue("cep", formatted);
-                }}
-              />
-
-              <div className="space-y-2">
-                <Label>Sexo</Label>
-                <Select value={sexo} onValueChange={(value) => setValue("sexo", value as "M" | "F" | "O")}>
-                  <SelectTrigger className={errors.sexo ? "border-destructive" : ""}>
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="M">Masculino</SelectItem>
-                    <SelectItem value="F">Feminino</SelectItem>
-                    <SelectItem value="O">Outro</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.sexo && <p className="text-sm text-destructive">{errors.sexo.message}</p>}
-              </div>
-
-              {/* Espaço vazio para manter alinhamento no desktop */}
-              <div className="hidden md:block"></div>
-
-              <div className="space-y-2">
-                <Label>Senha</Label>
-                <PasswordInput {...register("senha")} error={errors.senha?.message} placeholder="Digite sua senha" />
-                {errors.senha && <p className="text-sm text-destructive">{errors.senha.message}</p>}
-              </div>
-
-              <div className="space-y-2">
-                <Label>Confirmar Senha</Label>
-                <PasswordInput
-                  {...register("confirmar_senha")}
-                  error={errors.confirmar_senha?.message}
-                  placeholder="Digite sua senha novamente"
-                />
-                {errors.confirmar_senha && <p className="text-sm text-destructive">{errors.confirmar_senha.message}</p>}
-              </div>
-            </div>
-
-            {/* Checkbox e botão ocupam toda a largura */}
-            <div className="flex items-center gap-3">
-              <Checkbox
-                id="aceite_termos"
-                checked={aceiteTermos}
-                onCheckedChange={(checked) => setValue("aceite_termos", checked as boolean)}
-              />
-              <Label
-                htmlFor="aceite_termos"
-                className="text-sm leading-relaxed peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Aceito os{" "}
-                <button type="button" className="text-primary underline" onClick={handleDocumentoPendente}>
-                  termos de política de privacidade
-                </button>{" "}
-                e as{" "}
-                <button type="button" className="text-primary underline" onClick={handleDocumentoPendente}>
-                  regras do sistema de fidelidade
-                </button>
-              </Label>
-            </div>
-            {errors.aceite_termos && <p className="text-sm text-destructive">{errors.aceite_termos.message}</p>}
-
-            <Button type="submit" className="w-full" disabled={isSubmitting || !isValid}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Cadastrando...
-                </>
+    <div className="min-h-screen bg-gradient-to-b from-primary/5 via-background to-background px-4 py-10">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
+        <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr]">
+          <section className="space-y-6">
+            <div className="rounded-3xl bg-gradient-primary p-8 text-primary-foreground shadow-2xl">
+              {configuracoes?.logo_base64 ? (
+                <div className="mb-6 flex justify-center">
+                  <img
+                    src={configuracoes.logo_base64}
+                    alt="Logo do sistema de fidelidade"
+                    className="h-20 w-auto max-w-[220px] object-contain drop-shadow-lg"
+                  />
+                </div>
               ) : (
-                "Cadastrar"
+                <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/70">Sistema de Fidelidade</p>
               )}
-            </Button>
+              <h1 className="mt-4 text-4xl font-semibold leading-tight">Seja muito bem-vindo(a)!</h1>
+              <p className="mt-3 text-base text-white/90">
+                Acumule pontos, desbloqueie experiências exclusivas e mantenha tudo em um só lugar, mesmo que você já
+                seja cliente.
+              </p>
+              <div className="mt-6 flex flex-wrap items-center justify-start gap-3">
+                <a
+                  href="#registro-form"
+                  className="inline-flex items-center justify-center rounded-full bg-white/15 px-6 py-2.5 text-sm font-semibold uppercase tracking-wide text-primary-foreground transition hover:bg-white/25"
+                >
+                  Quero me cadastrar
+                </a>
+                <span className="text-sm font-semibold uppercase tracking-wide text-white/70">ou</span>
+                <Link
+                  to="/login"
+                  className="inline-flex items-center justify-center rounded-full bg-white px-6 py-2.5 text-sm font-semibold uppercase tracking-wide text-primary transition hover:bg-white/90"
+                >
+                  já tenho conta
+                </Link>
+              </div>
 
-            <p className="text-center text-sm text-muted-foreground">
-              Já tem uma conta?{" "}
-              <a href="/login" className="text-primary hover:underline">
-                Fazer login
-              </a>
-            </p>
-          </form>
+              <ul className="mt-8 space-y-4 text-sm text-white/90">
+                <li className="flex items-start gap-3">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-xs font-bold">
+                    1
+                  </span>
+                  Informe seus dados básicos para criarmos sua conta única.
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-xs font-bold">
+                    2
+                  </span>
+                  Use o mesmo e-mail ou WhatsApp já usados nas lojas parceiras.
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-xs font-bold">
+                    3
+                  </span>
+                  Acesse sua área exclusiva sempre que quiser acompanhar seus pontos.
+                </li>
+              </ul>
+
+              <div className="mt-6 rounded-2xl border border-white/20 bg-white/10 p-4 text-sm text-white/95 backdrop-blur">
+                <p className="font-semibold">Usuário recorrente?</p>
+                <p className="text-white/80">
+                  Entre com seu login para resgatar recompensas ou recuperar seus pontos em segundos.
+                </p>
+              </div>
+            </div>
+
+            {/* Carrossel de recompensas */}
+            {itensRecompensa.length > 0 && (
+              <div className="rounded-3xl border border-border/40 bg-card/80 p-6 shadow-lg backdrop-blur">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">Vantagens</p>
+                    <h2 className="text-lg font-semibold text-foreground">Recompensas em destaque</h2>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <RecompensasCarousel itens={itensRecompensa} />
+                </div>
+              </div>
+            )}
+          </section>
+
+          <section className="rounded-3xl border border-border/60 bg-card p-6 shadow-2xl md:p-10">
+            <div className="text-center md:text-left">
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-primary">Cadastro rápido</p>
+              <h2 className="mt-3 text-3xl font-semibold text-foreground">Preencha seus dados</h2>
+              <p className="text-sm text-muted-foreground">
+                Leva menos de 2 minutos e você já pode acompanhar sua fidelidade.
+              </p>
+            </div>
+
+            <form
+              id="registro-form"
+              onSubmit={handleSubmit(onSubmit)}
+              className="mt-8 space-y-6"
+              role="form"
+              aria-label="Formulário de Cadastro"
+            >
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <Input
+                  label="Nome Completo"
+                  {...register("nome_completo")}
+                  error={errors.nome_completo?.message}
+                  placeholder="Digite seu nome completo"
+                />
+
+                <Input
+                  label="E-mail"
+                  type="email"
+                  {...register("email")}
+                  error={errors.email?.message}
+                  placeholder="seu@email.com"
+                />
+
+                <Input
+                  label="WhatsApp"
+                  type="tel"
+                  {...register("whatsapp")}
+                  error={errors.whatsapp?.message}
+                  placeholder="+55DDD000000000"
+                  onChange={(e) => {
+                    const formatted = formatWhatsApp(e.target.value);
+                    setValue("whatsapp", formatted);
+                  }}
+                />
+
+                <Input
+                  label="CEP"
+                  type="tel"
+                  {...register("cep")}
+                  error={errors.cep?.message}
+                  placeholder="00000-000"
+                  onChange={(e) => {
+                    const formatted = formatCEP(e.target.value);
+                    setValue("cep", formatted);
+                  }}
+                />
+
+                <div className="space-y-2">
+                  <Label>Sexo</Label>
+                  <Select value={sexo} onValueChange={(value) => setValue("sexo", value as "M" | "F" | "O")}>
+                    <SelectTrigger className={errors.sexo ? "border-destructive" : ""}>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="M">Masculino</SelectItem>
+                      <SelectItem value="F">Feminino</SelectItem>
+                      <SelectItem value="O">Outro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors.sexo && <p className="text-sm text-destructive">{errors.sexo.message}</p>}
+                </div>
+
+                <div className="hidden md:block" aria-hidden="true"></div>
+
+                <div className="space-y-2">
+                  <Label>Senha</Label>
+                  <PasswordInput {...register("senha")} error={errors.senha?.message} placeholder="Digite sua senha" />
+                  {errors.senha && <p className="text-sm text-destructive">{errors.senha.message}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Confirmar Senha</Label>
+                  <PasswordInput
+                    {...register("confirmar_senha")}
+                    error={errors.confirmar_senha?.message}
+                    placeholder="Digite sua senha novamente"
+                  />
+                  {errors.confirmar_senha && <p className="text-sm text-destructive">{errors.confirmar_senha.message}</p>}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-muted/40 p-4">
+                <Checkbox
+                  id="aceite_termos"
+                  checked={aceiteTermos}
+                  onCheckedChange={(checked) => setValue("aceite_termos", checked as boolean)}
+                />
+                <Label
+                  htmlFor="aceite_termos"
+                  className="text-sm leading-relaxed peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Aceito os{" "}
+                  <button type="button" className="text-primary underline" onClick={handleDocumentoPendente}>
+                    termos de política de privacidade
+                  </button>{" "}
+                  e as{" "}
+                  <button type="button" className="text-primary underline" onClick={handleDocumentoPendente}>
+                    regras do sistema de fidelidade
+                  </button>
+                </Label>
+              </div>
+              {errors.aceite_termos && <p className="text-sm text-destructive">{errors.aceite_termos.message}</p>}
+
+              <Button type="submit" className="w-full text-base font-semibold" disabled={isSubmitting || !isValid}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Cadastrando...
+                  </>
+                ) : (
+                  "Concluir meu cadastro"
+                )}
+              </Button>
+
+              <div className="rounded-2xl bg-muted/50 p-4 text-center text-sm text-muted-foreground">
+                Já participa do clube?{" "}
+                <Link to="/login" className="font-semibold text-primary underline-offset-4 hover:underline">
+                  Acesse sua conta
+                </Link>
+              </div>
+            </form>
+          </section>
         </div>
       </div>
     </div>
