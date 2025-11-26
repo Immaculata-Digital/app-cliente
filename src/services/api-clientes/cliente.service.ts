@@ -26,11 +26,11 @@ export interface ClienteRegistroResponse {
  */
 class ClienteService {
   /**
-   * Registra um novo cliente
+   * Registra um novo cliente (rota pública)
    */
   async registrar(schema: string, data: ClienteRegistroData): Promise<ClienteRegistroResponse> {
     return await apiClientClientes.post<ClienteRegistroResponse>(
-      `/clientes/${schema}`,
+      `/clientes/publico/${schema}`,
       data,
       { skipAuth: true }
     );

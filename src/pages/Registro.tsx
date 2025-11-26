@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
@@ -41,6 +41,37 @@ const Registro = () => {
 
   const sexo = watch("sexo");
   const aceiteTermos = watch("aceite_termos");
+  const nomeCompleto = watch("nome_completo");
+  const email = watch("email");
+  const whatsapp = watch("whatsapp");
+  const cep = watch("cep");
+  const senha = watch("senha");
+  const confirmarSenha = watch("confirmar_senha");
+
+  // Verifica se todos os campos obrigatórios estão preenchidos e válidos
+  const isFormValid = useMemo(() => {
+    return !!(
+      nomeCompleto &&
+      nomeCompleto.length >= 3 &&
+      email &&
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
+      whatsapp &&
+      /^\+55\d{2}\d{8,9}$/.test(whatsapp) &&
+      cep &&
+      /^\d{5}-\d{3}$/.test(cep) &&
+      sexo &&
+      senha &&
+      senha.length >= 10 &&
+      /[A-Z]/.test(senha) &&
+      /[a-z]/.test(senha) &&
+      /[0-9]/.test(senha) &&
+      /[!@#$%^&*(),.?":{}|<>]/.test(senha) &&
+      confirmarSenha &&
+      senha === confirmarSenha &&
+      aceiteTermos === true &&
+      Object.keys(errors).length === 0
+    );
+  }, [nomeCompleto, email, whatsapp, cep, sexo, senha, confirmarSenha, aceiteTermos, errors]);
 
   const handleDocumentoPendente = () => {
     alert("documento pendente");
@@ -114,16 +145,18 @@ const Registro = () => {
 
       navigate("/login");
     } catch (error: any) {
-      const errorData = error.response?.data;
+      const errorData = error.response?.data || {};
       let errorMessage = "Ocorreu um erro ao realizar o cadastro";
       
-      // Se tiver details (array de erros), formatar adequadamente
-      if (errorData?.details && Array.isArray(errorData.details)) {
-        errorMessage = errorData.details.join(", ");
-      } else if (errorData?.error) {
+      // Prioridade: error > message > details
+      if (errorData.error) {
         errorMessage = errorData.error;
-      } else if (errorData?.message) {
+      } else if (errorData.message) {
         errorMessage = errorData.message;
+      } else if (errorData.details && Array.isArray(errorData.details)) {
+        errorMessage = errorData.details.join(", ");
+      } else if (error.message && error.message !== "Unknown error") {
+        errorMessage = error.message;
       }
 
       toast({
@@ -329,7 +362,7 @@ const Registro = () => {
               </div>
               {errors.aceite_termos && <p className="text-sm text-destructive">{errors.aceite_termos.message}</p>}
 
-              <Button type="submit" className="w-full text-base font-semibold" disabled={isSubmitting || !isValid}>
+              <Button type="submit" className="w-full text-base font-semibold" disabled={isSubmitting || !isFormValid}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

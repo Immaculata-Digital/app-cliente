@@ -155,7 +155,10 @@ export class HttpClient {
       // Verifica se houve erro HTTP
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP Error ${response.status}`);
+        const error = new Error(errorData.message || errorData.error || `HTTP Error ${response.status}`) as any;
+        error.status = response.status;
+        error.response = { data: errorData };
+        throw error;
       }
 
       // Processa a resposta (se não for 204 No Content)
