@@ -106,17 +106,20 @@ const Login = () => {
           {/* Header com gradiente */}
           <div className="bg-gradient-primary p-8 text-center">
             {/* Logo */}
-            {configuracoes?.logo_base64 && (
-              <div className="mb-4 flex justify-center">
+            {configuracoes?.logo_base64 ? (
+              <div className="flex justify-center">
                 <img 
                   src={configuracoes.logo_base64}
                   alt="Logo" 
-                  className="h-16 w-auto object-contain"
+                  className="h-20 w-auto object-contain"
                 />
               </div>
+            ) : (
+              <>
+                <h1 className="text-3xl font-bold text-primary-foreground mb-2">Sistema de Fidelidade</h1>
+                <p className="text-primary-foreground/90">Acesso aos seus pontos</p>
+              </>
             )}
-            <h1 className="text-3xl font-bold text-primary-foreground mb-2">Sistema de Fidelidade</h1>
-            <p className="text-primary-foreground/90">Acesso aos seus pontos</p>
           </div>
 
           {/* Form */}

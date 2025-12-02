@@ -14,10 +14,23 @@ import Cookies from 'js-cookie';
  * Adiciona o token de autenticação automaticamente nas requisições
  */
 export const authInterceptor = (config: RequestConfig): RequestConfig => {
-  // Se skipAuth for true, não adiciona o token
-  if (config.skipAuth) {
-    console.log('[Auth Interceptor] Skipping auth for this request');
-    return config;
+  // Se skipAuth for true, não adiciona o token e remove qualquer Authorization existente
+  if (config.skipAuth === true) {
+    console.log('[Auth Interceptor] Skipping auth for this request - skipAuth is true');
+    // Remove Authorization header se existir e garante que não será adicionado
+    const headers: HeadersInit = {};
+    if (config.headers) {
+      Object.entries(config.headers).forEach(([key, value]) => {
+        if (key.toLowerCase() !== 'authorization') {
+          headers[key] = value;
+        }
+      });
+    }
+    return {
+      ...config,
+      headers,
+      skipAuth: true, // Garante que skipAuth seja preservado
+    };
   }
 
   // Busca o token do cookie ou storage (fallback)

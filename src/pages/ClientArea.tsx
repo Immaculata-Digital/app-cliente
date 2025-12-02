@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useConfiguracoesGlobais } from "@/contexts/ConfiguracoesGlobaisContext";
 import QRCodeComponent from "react-qr-code";
 import { usePontosRecompensas } from "@/hooks/usePontosRecompensas";
 import { pontosMovimentacaoService } from "@/services/api-clientes";
@@ -28,6 +29,7 @@ type ModalContext = "resgate" | "somar-pontos";
 const ClientArea = () => {
   const { toast } = useToast();
   const { user, logout, isLoading } = useAuth();
+  const { configuracoes } = useConfiguracoesGlobais();
   const [modalAberto, setModalAberto] = useState<ModalType>(null);
   const [contextoModal, setContextoModal] = useState<ModalContext>("resgate");
   const [itemSelecionado, setItemSelecionado] = useState<PontosRecompensa | null>(null);
@@ -220,6 +222,17 @@ const ClientArea = () => {
       </header>
 
       <div className="max-w-4xl mx-auto p-6 space-y-6">
+        {/* Logo centralizada acima dos cards */}
+        {configuracoes?.logo_base64 && (
+          <div className="flex justify-center mb-6">
+            <img 
+              src={configuracoes.logo_base64}
+              alt="Logo" 
+              className="h-32 md:h-40 w-auto object-contain"
+            />
+          </div>
+        )}
+
         {/* Cards de Destaque */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Card Saldo */}
