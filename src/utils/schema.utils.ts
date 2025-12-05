@@ -2,15 +2,15 @@
  * Utilidades para determinar o schema baseado no subdomínio
  */
 
-const DEFAULT_SCHEMA = 'z_demo';
+const DEFAULT_SCHEMA = 'casona';
 
 /**
  * Determina o schema baseado no hostname atual
  * 
  * Regras:
- * - Se for preview--, *.lovable.*, *.lovableproject.*, homolog-app-admin ou localhost: usa z_demo
+ * - Se for preview--, *.lovable.*, *.lovableproject.*, homolog-app-admin ou localhost: usa casona
  * - Se tiver subdomínio válido: usa o subdomínio como schema
- * - Caso contrário: usa z_demo
+ * - Caso contrário: usa casona
  */
 export function getSchemaFromHostname(): string {
   if (typeof window === 'undefined') {

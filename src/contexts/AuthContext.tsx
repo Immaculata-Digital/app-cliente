@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Menu } from "@/types/menu";
 import { Funcionalidade } from "@/types/funcionalidade";
 import { authService } from "@/services/api-usuarios";
+import { clienteService } from "@/services/api-clientes";
 import Cookies from "js-cookie";
 
 export interface User {
@@ -19,17 +20,13 @@ export interface User {
 
 interface LoginResponse {
   user: {
-    id_usuario: number;
+    id: string;
+    fullName: string;
     login: string;
     email: string;
-    id_grupo_usuario: number;
-    id_cliente: number | null;
-    nome_completo: string | null;
   };
-  access_token: string;
-  access_expires_in: string;
-  refresh_token: string;
-  refresh_expires_in: string;
+  accessToken: string;
+  refreshToken: string;
 }
 
 interface AuthContextType {
@@ -103,63 +100,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logEvent("auth_login_attempt", { login: loginEmail });
 
       try {
-        // 1. Tenta login na API real
-        const response = await authService.login({ login: loginEmail, senha: password }, rememberMe);
+        // 1. Tenta login na API real (API usuarios v2)
+        const response = await authService.login({ loginOrEmail: loginEmail, password: password }, rememberMe);
         logEvent("auth_api_success", { login: loginEmail });
 
-        // 2. Valida se usuário possui cliente vinculado
-        if (!response.user.id_cliente) {
-          logEvent("auth_login_blocked_no_client", { login: loginEmail, userId: response.user.id_usuario });
-          clearAuth();
-          throw new Error("USER_NOT_CLIENT");
+        // 2. Buscar dados do cliente na API clientes v2 usando o id do usuário
+        const nomeCliente = response.user.fullName ?? response.user.login;
+        let clienteId: number | null = null;
+        let clienteNomeFinal = nomeCliente;
+
+        try {
+          // Buscar cliente por id_usuario no schema padrão
+          const cliente = await clienteService.getClienteByUsuario("casona", parseInt(response.user.id, 10));
+          if (cliente) {
+            clienteId = cliente.id_cliente;
+            clienteNomeFinal = cliente.nome_completo || nomeCliente;
+          }
+        } catch (error) {
+          console.warn('[AuthContext] Erro ao buscar cliente por usuário:', error);
+          // Continua sem clienteId se não encontrar
         }
 
-        const nomeCliente = response.user.nome_completo ?? response.user.login;
-
-        // 3. Monta objeto User com menus e funcionalidades
         const user: User = {
-          id: response.user.id_usuario,
+          id: parseInt(response.user.id, 10),
           login: response.user.login,
           email: response.user.email,
-          grupo: String(response.user.id_grupo_usuario ?? ""),
-          nome: nomeCliente,
-          clienteId: response.user.id_cliente,
-          clienteNome: nomeCliente,
+          grupo: "", // API v2 não retorna grupo no login
+          nome: clienteNomeFinal,
+          clienteId: clienteId,
+          clienteNome: clienteNomeFinal,
           menus: [],
           funcionalidades: [],
         };
 
-        // 4. Armazena no storage correto
+        // 3. Armazena no storage correto
         const storage = rememberMe ? localStorage : sessionStorage;
         storage.setItem("user", JSON.stringify(user));
 
-        // Calcula expiração corretamente (suporta '15m', '900s', '2h')
-        const parseDurationToSeconds = (v: string) => {
-          if (!v) return 900;
-          const n = parseInt(v);
-          if (v.endsWith("m")) return n * 60;
-          if (v.endsWith("h")) return n * 3600;
-          if (v.endsWith("s")) return n;
-          return n; // assume segundos
-        };
-        const accessExpiresSec = parseDurationToSeconds(response.access_expires_in);
+        // API v2 usa tokens JWT com expiração padrão de 1 dia (86400 segundos)
+        const accessExpiresSec = 86400; // 1 dia em segundos
 
         sessionStorage.setItem("access_expires_in", String(accessExpiresSec));
-        sessionStorage.setItem("access_token", response.access_token);
 
         const cookieOptions = {
-          expires: accessExpiresSec / (24 * 60 * 60),
+          expires: 1, // 1 dia
           secure: window.location.protocol === "https:",
           sameSite: "Strict" as const,
         };
 
-        // 5. Armazena tokens e dados do cliente em cookies
-        Cookies.set("access_token", response.access_token, cookieOptions);
-        Cookies.set("cliente_id", String(response.user.id_cliente), cookieOptions);
-        Cookies.set("cliente_nome", nomeCliente, cookieOptions);
-        storage.setItem("refresh_token", response.refresh_token);
+        // 4. Armazena tokens em cookies
+        Cookies.set("access_token", response.accessToken, cookieOptions);
+        storage.setItem("refresh_token", response.refreshToken);
 
-        // 6. Atualiza state
+        // 5. Atualiza state
         setUser(user);
         scheduleRefresh(accessExpiresSec);
 

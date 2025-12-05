@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { registroSchema, type RegistroFormData } from "@/schemas/registro.schema";
 import { clienteService } from "@/services/api-clientes/cliente.service";
 import { pontosRecompensasService } from "@/services/api-clientes/pontos-recompensas.service";
+import { lojaService } from "@/services/api-admin";
 import { PasswordInput } from "@/components/ds/PasswordInput";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ds/Input";
@@ -78,23 +79,61 @@ const Registro = () => {
   };
 
   useEffect(() => {
-    const idLoja = searchParams.get("id_loja");
-    if (!idLoja) {
-      toast({
-        title: "Erro",
-        description: "ID da loja não encontrado",
-        variant: "destructive",
-      });
-      navigate("/login");
-    }
+    const validarIdLoja = async () => {
+      const idLoja = searchParams.get("id_loja");
+      if (!idLoja) {
+        toast({
+          title: "Erro",
+          description: "ID da loja não encontrado",
+          variant: "destructive",
+        });
+        navigate("/login");
+        return;
+      }
+
+      // Verifica se o id_loja existe
+      try {
+        const idLojaNumero = parseInt(idLoja, 10);
+        if (isNaN(idLojaNumero)) {
+          toast({
+            title: "ID inválido",
+            description: "O ID da loja informado é inválido",
+            variant: "destructive",
+          });
+          navigate("/login");
+          return;
+        }
+
+        const lojaExiste = await lojaService.lojaExiste("casona", idLojaNumero);
+        if (!lojaExiste) {
+          toast({
+            title: "ID inválido",
+            description: "O ID da loja informado não existe",
+            variant: "destructive",
+          });
+          navigate("/login");
+          return;
+        }
+      } catch (error) {
+        console.error("Erro ao validar id_loja:", error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível validar o ID da loja",
+          variant: "destructive",
+        });
+        navigate("/login");
+      }
+    };
+
+    validarIdLoja();
   }, [searchParams, navigate, toast]);
 
   // Buscar itens de recompensa disponíveis
   useEffect(() => {
     const buscarItens = async () => {
       try {
-        // Usando o schema padrão "z_demo" (mesmo usado no registro)
-        const itens = await pontosRecompensasService.getItensDisponiveis("z_demo");
+        // Usando o schema padrão "casona" (mesmo usado no registro)
+        const itens = await pontosRecompensasService.getItensDisponiveis("casona");
         setItensRecompensa(itens);
       } catch (error) {
         // Silenciosamente ignora erros ao buscar itens (não é crítico)
@@ -127,7 +166,7 @@ const Registro = () => {
 
       const { confirmar_senha, ...registroData } = data;
 
-      await clienteService.registrar("z_demo", {
+      await clienteService.registrar("casona", {
         nome_completo: registroData.nome_completo,
         email: registroData.email,
         whatsapp: registroData.whatsapp,

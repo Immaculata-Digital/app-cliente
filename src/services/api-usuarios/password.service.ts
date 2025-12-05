@@ -59,7 +59,7 @@ class PasswordService {
   async resetPassword(token: string, novaSenha: string): Promise<ResetPasswordResponse> {
     return await apiClientUsuarios.post<ResetPasswordResponse>(
       '/clientes/auth/password/reset',
-      { token, novaSenha },
+      { token, nova_senha: novaSenha },
       { skipAuth: true }
     );
   }

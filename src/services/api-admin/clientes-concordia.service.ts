@@ -21,15 +21,15 @@ class ClientesConcordiaService {
    */
   async getNomeBySchema(schema: string): Promise<string | null> {
     try {
-      // Converte subdomínios homolog para z_demo
-      const normalizedSchema = schema.includes('homolog') ? 'z_demo' : schema;
+      // Converte subdomínios homolog para casona
+      const normalizedSchema = schema.includes('homolog') ? 'casona' : schema;
       
-      const response = await apiClientAdmin.get<ClienteConcordiaNome>(
-        `/clientes-concordia/schema/${normalizedSchema}/nome`,
+      const response = await apiClientAdmin.get<{ nome: string }>(
+        `/clientes-concordia/schema/${normalizedSchema}`,
         { skipAuth: true } // Endpoint público
       );
       
-      return response.nome || null;
+      return response?.nome || null;
     } catch (error) {
       console.error('[ClientesConcordiaService] Erro ao buscar nome do cliente:', error);
       return null;

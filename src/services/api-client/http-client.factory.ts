@@ -72,30 +72,30 @@ export function createHttpClient(config: HttpClientConfig): HttpClient {
  * Instâncias pré-configuradas dos clientes HTTP
  */
 
-// Cliente para API Admin (gestão interna)
+// Cliente para API Admin V2 (gestão interna)
 export const apiClientAdmin = createHttpClient({
-  baseURL: import.meta.env.VITE_API_HOMOLOG_ADMIN_URL || "https://homolog-api-admin.immaculatadigital.com.br/api",
+  baseURL: import.meta.env.VITE_API_HOMOLOG_ADMIN_V2_URL || import.meta.env.VITE_API_HOMOLOG_ADMIN_URL || "https://homolog-api-admin.immaculatadigital.com.br/api",
   enableAuth: true,
   enableLogging: true,
 });
 
-// Cliente para API Usuários (autenticação e gestão de usuários)
+// Cliente para API Usuários V2 (autenticação e gestão de usuários)
 export const apiClientUsuarios = createHttpClient({
-  baseURL: import.meta.env.VITE_API_HOMOLOG_USUARIOS_URL || "https://homolog-api-usuarios.immaculatadigital.com.br/api",
+  baseURL: import.meta.env.VITE_API_HOMOLOG_USUARIOS_V2_URL || import.meta.env.VITE_API_HOMOLOG_USUARIOS_URL || "http://localhost:3333/api",
   enableAuth: true,
   enableLogging: true,
 });
 
-// Cliente para API Clientes (movimentação de pontos e dados do cliente)
+// Cliente para API Clientes V2 (movimentação de pontos e dados do cliente)
 export const apiClientClientes = createHttpClient({
-  baseURL: import.meta.env.VITE_API_HOMOLOG_CLIENTES_URL || "https://homolog-api-clientes.immaculatadigital.com.br/api",
+  baseURL: import.meta.env.VITE_API_HOMOLOG_CLIENTES_V2_URL || import.meta.env.VITE_API_HOMOLOG_CLIENTES_URL || "https://homolog-api-clientes.immaculatadigital.com.br/api",
   enableAuth: true,
   enableLogging: true,
 });
 
 // Cliente sem autenticação (para endpoints públicos)
 export const apiClientPublic = createHttpClient({
-  baseURL: import.meta.env.VITE_API_HOMOLOG_ADMIN_URL || "https://homolog-api-admin.immaculatadigital.com.br/api",
+  baseURL: import.meta.env.VITE_API_HOMOLOG_ADMIN_V2_URL || import.meta.env.VITE_API_HOMOLOG_ADMIN_URL || "https://homolog-api-admin.immaculatadigital.com.br/api",
   enableAuth: false,
   enableLogging: false,
 });

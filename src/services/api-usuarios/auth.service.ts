@@ -11,35 +11,24 @@ import { apiClientUsuarios } from '../api-client/api-client-usuarios.instance';
 import Cookies from 'js-cookie';
 
 export interface LoginRequest {
-  login: string;
-  senha: string;
+  loginOrEmail: string;
+  password: string;
 }
 
 export interface LoginResponse {
+  accessToken: string;
+  refreshToken: string;
   user: {
-    id_usuario: number;
+    id: string;
+    fullName: string;
     login: string;
     email: string;
-    id_grupo_usuario: number;
-    id_cliente: number | null;
-    nome_completo: string | null;
-    nome?: string;
-    funcionalidades?: Array<{
-      id_funcionalidade: number;
-      codigo: string;
-      descricao: string;
-      ativo: boolean;
-      id_grupo_funcionalidade: number;
-    }>;
   };
-  access_token: string;
-  access_expires_in: string;
-  refresh_token: string;
-  refresh_expires_in: string;
 }
 
 export interface RefreshTokenResponse {
   accessToken: string;
+  refreshToken: string;
 }
 
 /**
@@ -71,7 +60,7 @@ class AuthService {
     localStorage.getItem('refresh_token');
     try {
       if (refreshToken) {
-        await apiClientUsuarios.post<LoginResponse>(
+        await apiClientUsuarios.post<{ status: string; message: string }>(
           '/auth/logout',
           { refreshToken }        
         );
@@ -95,16 +84,20 @@ class AuthService {
     }
 
     const response = await apiClientUsuarios.post<RefreshTokenResponse>(
-      '/auth/refresh',
-      { refreshToken, access_expires_in: "15m" },
+      '/auth/refresh-token',
+      { refreshToken },
       { skipAuth: true }
     );
 
+    // Atualizar tokens armazenados
     Cookies.set('access_token', response.accessToken, {
       expires: 1,
       secure: window.location.protocol === 'https:',
       sameSite: 'strict',
     });
+
+    const storage = sessionStorage.getItem('refresh_token') ? sessionStorage : localStorage;
+    storage.setItem('refresh_token', response.refreshToken);
 
     return response;
   }
@@ -117,14 +110,13 @@ class AuthService {
   private storeTokens(response: LoginResponse, useSessionStorage = false): void {
     const storage = useSessionStorage ? sessionStorage : localStorage;
     
-    Cookies.set('access_token', response.access_token, {
-      expires: parseInt(response.access_expires_in) / (24 * 60 * 60),
+    Cookies.set('access_token', response.accessToken, {
+      expires: 1, // 1 dia (padrão para tokens JWT)
       secure: window.location.protocol === 'https:',
       sameSite: 'strict',
     });
 
-    storage.setItem('refresh_token', response.refresh_token);
-    storage.setItem('access_expires_in', response.access_expires_in);
+    storage.setItem('refresh_token', response.refreshToken);
   }
 
   /**
