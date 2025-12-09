@@ -19,12 +19,14 @@ interface ConfiguracoesGlobaisContextType {
 
 const ConfiguracoesGlobaisContext = createContext<ConfiguracoesGlobaisContextType | undefined>(undefined);
 
-// Cores padrão (azul original)
+// Cores padrão
 const DEFAULT_CONFIG: ConfiguracoesGlobais = {
-  cor_primaria: '#3b82f6', // blue-500
-  cor_secundaria: '#f8fafc',
-  cor_texto: '#0f172a',
-  cor_destaque_texto: '#3b82f6',
+  cor_fundo: '#f8fafc',
+  cor_card: '#ffffff',
+  cor_texto_card: '#000000',
+  cor_valor_card: '#000000',
+  cor_botao: '#3b82f6',
+  cor_texto_botao: '#ffffff',
   fonte_titulos: 'Inter, system-ui, sans-serif',
   fonte_textos: 'Inter, system-ui, sans-serif',
 };
@@ -182,39 +184,58 @@ export function ConfiguracoesGlobaisProvider({ children }: { children: ReactNode
   const applyTheme = (config: ConfiguracoesGlobais) => {
     const root = document.documentElement;
 
-    // Aplica cor primária
-    if (config.cor_primaria) {
-      const primaryHSL = hexToHSL(config.cor_primaria);
-      root.style.setProperty('--primary', primaryHSL);
+    // Aplica cor do fundo
+    if (config.cor_fundo) {
+      const backgroundHSL = hexToHSL(config.cor_fundo);
+      root.style.setProperty('--background', backgroundHSL);
+    }
+
+    // Aplica cor dos cards
+    if (config.cor_card) {
+      const cardHSL = hexToHSL(config.cor_card);
+      root.style.setProperty('--card', cardHSL);
+      root.style.setProperty('--secondary', cardHSL);
+    }
+
+    // Aplica cor dos textos de card
+    if (config.cor_texto_card) {
+      const textCardHSL = hexToHSL(config.cor_texto_card);
+      root.style.setProperty('--card-foreground', textCardHSL);
+      root.style.setProperty('--muted-foreground', textCardHSL);
+    }
+
+    // Aplica cor dos valores de card
+    if (config.cor_valor_card) {
+      const valorCardHSL = hexToHSL(config.cor_valor_card);
+      root.style.setProperty('--card-value-color', valorCardHSL);
+    }
+
+    // Aplica cor dos botões
+    if (config.cor_botao) {
+      const buttonHSL = hexToHSL(config.cor_botao);
+      root.style.setProperty('--primary', buttonHSL);
       
-      // Gera variações da cor primária
-      const [h, s, l] = primaryHSL.split(' ').map(v => parseFloat(v));
+      // Gera variações da cor do botão
+      const [h, s, l] = buttonHSL.split(' ').map(v => parseFloat(v));
       root.style.setProperty('--primary-light', `${h} ${s}% ${Math.min(l + 10, 100)}%`);
       root.style.setProperty('--primary-dark', `${h} ${Math.max(s - 10, 0)}% ${Math.max(l - 10, 0)}%`);
       root.style.setProperty('--primary-hover', `${h} ${s}% ${Math.max(l - 5, 0)}%`);
       
-      // Atualiza o gradiente
+      // Atualiza o gradiente (usado no header)
       root.style.setProperty('--gradient-primary', `linear-gradient(135deg, hsl(${h} ${Math.max(s - 10, 0)}% ${Math.max(l - 20, 10)}%), hsl(${h} ${Math.max(s - 5, 0)}% ${l}%))`);
     }
 
-    // Aplica cor secundária
-    if (config.cor_secundaria) {
-      const secondaryHSL = hexToHSL(config.cor_secundaria);
-      root.style.setProperty('--secondary', secondaryHSL);
+    // Aplica cor do texto dos botões
+    if (config.cor_texto_botao) {
+      const buttonTextHSL = hexToHSL(config.cor_texto_botao);
+      root.style.setProperty('--primary-foreground', buttonTextHSL);
     }
 
-    // Aplica cor do texto
-    if (config.cor_texto) {
-      const textHSL = hexToHSL(config.cor_texto);
-      root.style.setProperty('--foreground', textHSL);
-      root.style.setProperty('--card-foreground', textHSL);
-    }
-
-    // Aplica cor de destaque do texto
-    if (config.cor_destaque_texto) {
-      const accentHSL = hexToHSL(config.cor_destaque_texto);
-      root.style.setProperty('--accent', accentHSL);
-      root.style.setProperty('--ring', accentHSL);
+    // Aplica cor de foreground padrão (para textos gerais)
+    if (config.cor_texto_card) {
+      const foregroundHSL = hexToHSL(config.cor_texto_card);
+      root.style.setProperty('--foreground', foregroundHSL);
+      root.style.setProperty('--secondary-foreground', foregroundHSL);
     }
 
     // Aplica fontes

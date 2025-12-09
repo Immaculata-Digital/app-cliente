@@ -101,27 +101,24 @@ const Login = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-light px-4">
       <div className="w-full max-w-md">
+        {/* Logo acima do card */}
+        {configuracoes?.logo_base64 ? (
+          <div className="flex justify-center mb-8 mt-8">
+            <img 
+              src={configuracoes.logo_base64}
+              alt="Logo" 
+              className="h-24 w-auto object-contain"
+            />
+          </div>
+        ) : (
+          <div className="text-center mb-8 mt-8">
+            <h1 className="text-3xl font-bold text-foreground mb-2">Sistema de Fidelidade</h1>
+            <p className="text-foreground/90">Acesso aos seus pontos</p>
+          </div>
+        )}
+
         {/* Card */}
         <div className="bg-card rounded-2xl shadow-lg border border-border overflow-hidden">
-          {/* Header com gradiente */}
-          <div className="bg-gradient-primary p-8 text-center">
-            {/* Logo */}
-            {configuracoes?.logo_base64 ? (
-              <div className="flex justify-center">
-                <img 
-                  src={configuracoes.logo_base64}
-                  alt="Logo" 
-                  className="h-20 w-auto object-contain"
-                />
-              </div>
-            ) : (
-              <>
-                <h1 className="text-3xl font-bold text-primary-foreground mb-2">Sistema de Fidelidade</h1>
-                <p className="text-primary-foreground/90">Acesso aos seus pontos</p>
-              </>
-            )}
-          </div>
-
           {/* Form */}
           <form
             onSubmit={handleSubmit(onSubmit)}

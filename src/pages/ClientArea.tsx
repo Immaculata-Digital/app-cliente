@@ -287,13 +287,13 @@ const ClientArea = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-light">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header com Logout */}
-      <header className="bg-gradient-primary p-6">
+      <header className="p-6" style={{ backgroundColor: 'hsl(var(--card))' }}>
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
           {/* Título - alinhado à esquerda no mobile, centralizado no desktop */}
           <div className="flex-1 md:text-center">
-            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-primary-foreground">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold" style={{ color: 'hsl(var(--card-foreground))' }}>
               Olá, {clienteData?.nome_completo || user?.clienteNome || user?.nome || 'Cliente'}
             </h1>
           </div>
@@ -304,7 +304,10 @@ const ClientArea = () => {
               variant="ghost"
               size="sm"
               onClick={logout}
-              className="text-primary-foreground hover:bg-primary-foreground/10"
+              style={{ 
+                color: 'hsl(var(--card-foreground))',
+              }}
+              className="hover:opacity-80"
             >
               <LogOut className="h-4 w-4 mr-2" />
               Sair
@@ -330,25 +333,25 @@ const ClientArea = () => {
           {/* Card Saldo */}
           <Card className="p-6 bg-card border-border">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-muted-foreground">Saldo de Pontos</h3>
+              <h3 className="text-sm font-medium" style={{ color: 'hsl(var(--card-foreground))' }}>Saldo de Pontos</h3>
               <Gift className="h-5 w-5 text-primary" />
             </div>
-            <p className="text-3xl font-bold text-foreground">
+            <p className="text-3xl font-bold" style={{ color: 'hsl(var(--card-value-color))' }}>
               {loading || loadingCliente ? "..." : (() => {
                 const pontos = recompensas?.quantidade_pontos ?? clienteData?.saldo ?? 0;
                 const numPontos = Number(pontos);
                 return (isNaN(numPontos) ? 0 : numPontos).toLocaleString('pt-BR');
               })()}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">pontos disponíveis</p>
+            <p className="text-xs mt-1" style={{ color: 'hsl(var(--card-foreground))' }}>pontos disponíveis</p>
           </Card>
 
           {/* Card Código */}
           <Card className="p-6 bg-card border-border">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-muted-foreground">Meu Código</h3>
+              <h3 className="text-sm font-medium" style={{ color: 'hsl(var(--card-foreground))' }}>Meu Código</h3>
             </div>
-            <p className="text-2xl font-mono font-bold text-foreground mb-3">
+            <p className="text-2xl font-mono font-bold mb-3" style={{ color: 'hsl(var(--card-value-color))' }}>
               {recompensas?.codigo_cliente || (clienteData ? `CLI-${clienteData.id_cliente}` : '')}
             </p>
             <Button
@@ -388,8 +391,8 @@ const ClientArea = () => {
                         </div>
                       )}
                       <div>
-                        <h3 className="font-semibold text-foreground">{item.nome_item}</h3>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <h3 className="font-semibold" style={{ color: 'hsl(var(--card-foreground))' }}>{item.nome_item}</h3>
+                        <p className="text-sm mt-1" style={{ color: 'hsl(var(--card-value-color))' }}>
                           {(item.qtd_pontos || 0).toLocaleString()} pontos
                         </p>
                       </div>
@@ -445,14 +448,14 @@ const ClientArea = () => {
           <div className="flex flex-col items-center justify-center py-8 space-y-6">
             {contextoModal === "resgate" ? (
               <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-2">Código de Resgate</p>
-                <p className="text-5xl font-mono font-bold text-foreground tracking-wider">
+                <p className="text-sm text-gray-600 mb-2">Código de Resgate</p>
+                <p className="text-5xl font-mono font-bold text-gray-900 tracking-wider">
                   {codigoExibido}
                 </p>
                 {detalhesResgate && (
-                  <p className="text-xs text-muted-foreground mt-4">
+                  <p className="text-xs text-gray-600 mt-4">
                     Saldo atual após resgate:{" "}
-                    <span className="font-semibold text-foreground">
+                    <span className="font-semibold text-gray-900">
                       {(detalhesResgate.saldo_atual || 0).toLocaleString()} pontos
                     </span>
                   </p>
@@ -464,39 +467,29 @@ const ClientArea = () => {
               </div>
             ) : (
               <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-2">Código do Cliente</p>
-                <p className="text-5xl font-mono font-bold text-foreground tracking-wider">
+                <p className="text-sm text-gray-600 mb-2">Código do Cliente</p>
+                <p className="text-5xl font-mono font-bold text-gray-900 tracking-wider">
                   {codigoExibido}
                 </p>
               </div>
             )}
             
-            <div className="flex gap-2 w-full">
-              {contextoModal !== "resgate" && (
+            {contextoModal === "resgate" && (
+              <div className="flex gap-2 w-full">
                 <Button
                   variant="outline"
-                  className="flex-1"
-                  onClick={() => setShowQR(!showQR)}
-                >
-                  <QrCode className="h-4 w-4 mr-2" />
-                  {showQR ? "Mostrar Código" : "Exibir QR Code"}
-                </Button>
-              )}
-              {(!showQR || contextoModal === "resgate") && (
-                <Button
-                  variant="outline"
-                  className="flex-1"
+                  className="flex-1 bg-blue-600 text-white border-0 hover:bg-blue-700"
                   onClick={copiarCodigo}
                 >
                   <Copy className="h-4 w-4 mr-2" />
                   Copiar Código
                 </Button>
-              )}
-            </div>
+              </div>
+            )}
             
             <Button
               variant="secondary"
-              className="w-full"
+              className="w-full bg-blue-600 text-white border-0 hover:bg-blue-700"
               onClick={() => {
                 setModalAberto(null);
                 setShowQR(false);
@@ -534,8 +527,8 @@ const ClientArea = () => {
           {itemSelecionado && (
             <div className="py-4">
               <div className="bg-muted/50 p-4 rounded-lg mb-4">
-                <p className="font-semibold text-foreground">{itemSelecionado.nome_item}</p>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="font-semibold text-gray-900">{itemSelecionado.nome_item}</p>
+                <p className="text-sm text-gray-900 mt-1">
                   {(itemSelecionado.qtd_pontos || 0).toLocaleString()} pontos
                 </p>
               </div>
@@ -556,7 +549,7 @@ const ClientArea = () => {
               <div className="flex gap-2">
                 <Button
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
                   onClick={() => {
                     setModalAberto(null);
                     setItemSelecionado(null);
@@ -567,7 +560,7 @@ const ClientArea = () => {
                   Cancelar
                 </Button>
                 <Button
-                  className="flex-1"
+                  className="flex-1 bg-blue-600 text-white border-0 hover:bg-blue-700"
                   onClick={confirmarResgate}
                   disabled={resgatePendente}
                 >
