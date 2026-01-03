@@ -13,9 +13,7 @@ import { clienteService } from "@/services/api-clientes";
 import type { PontosRecompensa } from "@/types/cliente-pontos-recompensas";
 import type { CreateMovimentacaoRequest, ResgateResponse } from "@/types/cliente-pontos-movimentacao";
 import type { ClienteData } from "@/services/api-clientes/cliente.service";
-
-// Schema tenant padrão (multi-tenant)
-const TENANT_SCHEMA = "casona";
+import { getSchemaFromHostname } from "@/utils/schema.utils";
 
 type ModalType = "codigo" | "confirmar-resgate" | null;
 type ModalContext = "resgate" | "somar-pontos";
@@ -37,8 +35,9 @@ const ClientArea = () => {
   const [itensComCodigo, setItensComCodigo] = useState<Map<number, ResgateResponse>>(new Map());
   const codigosVerificadosRef = useRef<Set<number>>(new Set());
 
+  const schema = getSchemaFromHostname();
   const { loading, recompensas, fetchRecompensas } = usePontosRecompensas({
-    schema: TENANT_SCHEMA,
+    schema: schema,
     id_cliente: user?.clienteId || 0,
   });
 
@@ -58,7 +57,7 @@ const ClientArea = () => {
       
       setLoadingCliente(true);
       try {
-        const cliente = await clienteService.getCliente(TENANT_SCHEMA, user.clienteId);
+        const cliente = await clienteService.getCliente(schema, user.clienteId);
         setClienteData(cliente);
       } catch (error) {
         console.error('[ClientArea] Erro ao buscar dados do cliente:', error);
@@ -103,7 +102,7 @@ const ClientArea = () => {
       for (const item of itensParaVerificar) {
         try {
           const codigoExistente = await pontosMovimentacaoService.buscarCodigoExistente(
-            TENANT_SCHEMA,
+            schema,
             user.clienteId,
             item.id_item_recompensa
           );
@@ -178,7 +177,7 @@ const ClientArea = () => {
       if (!codigoExistente) {
         // Se não está no cache, buscar na API
         codigoExistente = await pontosMovimentacaoService.buscarCodigoExistente(
-          TENANT_SCHEMA,
+          schema,
           user.clienteId,
           item.id_item_recompensa
         );
@@ -231,7 +230,7 @@ const ClientArea = () => {
 
     try {
       const resposta = await pontosMovimentacaoService.resgatarRecompensa(
-        TENANT_SCHEMA,
+        schema,
         user.clienteId,
         itemSelecionado.id_item_recompensa,
         `Resgate de ${itemSelecionado.nome_item}`

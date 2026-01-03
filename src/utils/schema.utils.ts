@@ -2,7 +2,7 @@
  * Utilidades para determinar o schema baseado no subdomínio
  */
 
-const DEFAULT_SCHEMA = 'casona';
+const DEFAULT_SCHEMA = import.meta.env.VITE_SCHEMA_DEFAULT ?? 'casona';
 
 /**
  * Determina o schema baseado no hostname atual

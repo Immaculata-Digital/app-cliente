@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { RecompensasCarousel } from "@/components/RecompensasCarousel";
 import type { PontosRecompensa } from "@/types/cliente-pontos-recompensas";
 import { useConfiguracoesGlobais } from "@/contexts/ConfiguracoesGlobaisContext";
+import { getSchemaFromHostname } from "@/utils/schema.utils";
 
 const Registro = () => {
   const [searchParams] = useSearchParams();
@@ -104,7 +105,8 @@ const Registro = () => {
           return;
         }
 
-        const lojaExiste = await lojaService.lojaExiste("casona", idLojaNumero);
+        const schema = getSchemaFromHostname();
+        const lojaExiste = await lojaService.lojaExiste(schema, idLojaNumero);
         if (!lojaExiste) {
           toast({
             title: "ID inválido",
@@ -132,8 +134,9 @@ const Registro = () => {
   useEffect(() => {
     const buscarItens = async () => {
       try {
-        // Usando o schema padrão "casona" (mesmo usado no registro)
-        const itens = await pontosRecompensasService.getItensDisponiveis("casona");
+        // Usando o schema padrão (configurado via VITE_SCHEMA_DEFAULT)
+        const schema = getSchemaFromHostname();
+        const itens = await pontosRecompensasService.getItensDisponiveis(schema);
         setItensRecompensa(itens);
       } catch (error) {
         // Silenciosamente ignora erros ao buscar itens (não é crítico)
@@ -165,8 +168,9 @@ const Registro = () => {
       }
 
       const { confirmar_senha, ...registroData } = data;
+      const schema = getSchemaFromHostname();
 
-      await clienteService.registrar("casona", {
+      await clienteService.registrar(schema, {
         nome_completo: registroData.nome_completo,
         email: registroData.email,
         whatsapp: registroData.whatsapp,

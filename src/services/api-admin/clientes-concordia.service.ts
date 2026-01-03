@@ -21,8 +21,8 @@ class ClientesConcordiaService {
    */
   async getNomeBySchema(schema: string): Promise<string | null> {
     try {
-      // Converte subdomínios homolog para casona
-      const normalizedSchema = schema.includes('homolog') ? 'casona' : schema;
+      // Usa o schema fornecido diretamente (sem normalização)
+      const normalizedSchema = schema;
       
       const response = await apiClientAdmin.get<{ nome: string }>(
         `/clientes-concordia/schema/${normalizedSchema}`,

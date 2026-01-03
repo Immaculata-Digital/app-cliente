@@ -5,6 +5,7 @@ import { Funcionalidade } from "@/types/funcionalidade";
 import { authService } from "@/services/api-usuarios";
 import { clienteService } from "@/services/api-clientes";
 import Cookies from "js-cookie";
+import { getSchemaFromHostname } from "@/utils/schema.utils";
 
 export interface User {
   id: number;
@@ -111,7 +112,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         try {
           // Buscar cliente por id_usuario no schema padrão
-          const cliente = await clienteService.getClienteByUsuario("casona", parseInt(response.user.id, 10));
+          const schema = getSchemaFromHostname();
+          const cliente = await clienteService.getClienteByUsuario(schema, parseInt(response.user.id, 10));
           if (cliente) {
             clienteId = cliente.id_cliente;
             clienteNomeFinal = cliente.nome_completo || nomeCliente;
