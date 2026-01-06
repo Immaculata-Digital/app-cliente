@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { PasswordInput } from "@/components/ds/PasswordInput";
 import { cn } from "@/lib/utils";
+import { getSchemaFromHostname } from "@/utils/schema.utils";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -22,6 +23,10 @@ const Login = () => {
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Obter nome do cliente a partir do schema
+  const schema = getSchemaFromHostname();
+  const nomeCliente = schema.charAt(0).toUpperCase() + schema.slice(1);
 
   // Debug: verificar configurações
   useEffect(() => {
@@ -102,20 +107,21 @@ const Login = () => {
     <div className="flex min-h-screen items-center justify-center bg-gradient-light px-4">
       <div className="w-full max-w-md">
         {/* Logo acima do card */}
-        {configuracoes?.logo_base64 ? (
-          <div className="flex justify-center mb-8 mt-8">
-            <img 
-              src={configuracoes.logo_base64}
-              alt="Logo" 
-              className="h-24 w-auto object-contain"
-            />
-          </div>
-        ) : (
-          <div className="text-center mb-8 mt-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">Sistema de Fidelidade</h1>
+        <div className="flex flex-col items-center mb-8 mt-8">
+          {configuracoes?.logo_base64 && (
+            <div className="flex justify-center mb-4">
+              <img 
+                src={configuracoes.logo_base64}
+                alt="Logo" 
+                className="h-24 w-auto object-contain"
+              />
+            </div>
+          )}
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-foreground mb-2">{nomeCliente}</h1>
             <p className="text-foreground/90">Acesso aos seus pontos</p>
           </div>
-        )}
+        </div>
 
         {/* Card */}
         <div className="bg-card rounded-2xl shadow-lg border border-border overflow-hidden">
