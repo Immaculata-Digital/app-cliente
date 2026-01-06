@@ -53,14 +53,29 @@ const ClientArea = () => {
   // Buscar dados do cliente apenas uma vez
   useEffect(() => {
     const buscarDadosCliente = async () => {
-      if (!user?.clienteId || loadingCliente || clienteData) return;
+      if (!user?.clienteId || loadingCliente || clienteData) {
+        console.log('[ClientArea] Pulando busca de cliente:', { 
+          temClienteId: !!user?.clienteId, 
+          loadingCliente, 
+          temClienteData: !!clienteData 
+        });
+        return;
+      }
       
       setLoadingCliente(true);
       try {
+        console.log('[ClientArea] Buscando dados do cliente:', { schema, clienteId: user.clienteId });
         const cliente = await clienteService.getCliente(schema, user.clienteId);
+        console.log('[ClientArea] Dados do cliente recebidos:', cliente);
         setClienteData(cliente);
-      } catch (error) {
+      } catch (error: any) {
         console.error('[ClientArea] Erro ao buscar dados do cliente:', error);
+        // Mostra toast de erro para o usuário
+        toast({
+          variant: "destructive",
+          title: "Erro ao carregar dados",
+          description: error?.message || "Não foi possível carregar os dados do cliente.",
+        });
       } finally {
         setLoadingCliente(false);
       }
@@ -74,9 +89,25 @@ const ClientArea = () => {
 
   // Buscar recompensas apenas uma vez quando o cliente estiver disponível
   useEffect(() => {
-    if (!isLoading && user?.clienteId && !loading && !recompensas) {
-      fetchRecompensas();
-    }
+    const buscarRecompensas = async () => {
+      if (!isLoading && user?.clienteId && !loading) {
+        console.log('[ClientArea] Buscando recompensas:', { 
+          schema, 
+          clienteId: user.clienteId, 
+          jaTemRecompensas: !!recompensas 
+        });
+        
+        // Sempre tenta buscar, mesmo se já tiver recompensas (para atualizar)
+        try {
+          await fetchRecompensas();
+        } catch (error: any) {
+          console.error('[ClientArea] Erro ao buscar recompensas:', error);
+          // Não mostra toast aqui para não poluir a UI, o hook já trata
+        }
+      }
+    };
+
+    buscarRecompensas();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, user?.clienteId]);
 
