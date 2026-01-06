@@ -87,8 +87,26 @@ export const apiClientUsuarios = createHttpClient({
 });
 
 // Cliente para API Clientes V2 (movimentação de pontos e dados do cliente)
+const clientesBaseURL = 
+  import.meta.env.VITE_API_CLIENTES_URL_HOMOLOG || 
+  import.meta.env.VITE_API_CLIENTES_URL_MAIN || 
+  import.meta.env.VITE_API_HOMOLOG_CLIENTES_V2_URL || 
+  import.meta.env.VITE_API_HOMOLOG_CLIENTES_URL || 
+  "https://homolog-api-clientes.immaculatadigital.com.br/api";
+
+// Log para debug das variáveis de ambiente
+if (import.meta.env.DEV) {
+  console.log('[apiClientClientes] Variáveis de ambiente:', {
+    VITE_API_CLIENTES_URL_HOMOLOG: import.meta.env.VITE_API_CLIENTES_URL_HOMOLOG,
+    VITE_API_CLIENTES_URL_MAIN: import.meta.env.VITE_API_CLIENTES_URL_MAIN,
+    VITE_API_HOMOLOG_CLIENTES_V2_URL: import.meta.env.VITE_API_HOMOLOG_CLIENTES_V2_URL,
+    VITE_API_HOMOLOG_CLIENTES_URL: import.meta.env.VITE_API_HOMOLOG_CLIENTES_URL,
+    baseURL_usado: clientesBaseURL,
+  });
+}
+
 export const apiClientClientes = createHttpClient({
-  baseURL: import.meta.env.VITE_API_HOMOLOG_CLIENTES_V2_URL || import.meta.env.VITE_API_HOMOLOG_CLIENTES_URL || "https://homolog-api-clientes.immaculatadigital.com.br/api",
+  baseURL: clientesBaseURL,
   enableAuth: true,
   enableLogging: true,
 });
