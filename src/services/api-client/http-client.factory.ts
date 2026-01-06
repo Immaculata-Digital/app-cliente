@@ -94,7 +94,7 @@ const clientesBaseURL =
   import.meta.env.VITE_API_CLIENTES_URL_MAIN || 
   import.meta.env.VITE_API_HOMOLOG_CLIENTES_V2_URL || 
   import.meta.env.VITE_API_HOMOLOG_CLIENTES_URL || 
-  "blablabla";
+  "https://homolog-api-clientes.immaculatadigital.com.br/api";
 
 // Log para debug das variáveis de ambiente (sempre, para debug em produção também)
 // Isso ajuda a identificar qual variável está sendo usada no deploy
