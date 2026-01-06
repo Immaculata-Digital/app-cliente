@@ -76,6 +76,7 @@ export function createHttpClient(config: HttpClientConfig): HttpClient {
 // IMPORTANTE: Vite só injeta variáveis que começam com VITE_ durante o build
 // As variáveis devem ser passadas como ARG no Dockerfile durante o build
 const adminBaseURL = 
+  import.meta.env.VITE_API_ADMIN_V2_URL || 
   import.meta.env.VITE_API_ADMIN_URL_HOMOLOG || 
   import.meta.env.VITE_API_ADMIN_URL_MAIN || 
   import.meta.env.VITE_API_HOMOLOG_ADMIN_V2_URL || 
@@ -84,6 +85,7 @@ const adminBaseURL =
 
 // Log para debug das variáveis de ambiente (sempre, para debug em produção também)
 console.warn('[apiClientAdmin] Configuração:', {
+  VITE_API_ADMIN_V2_URL: import.meta.env.VITE_API_ADMIN_V2_URL || '❌ não definida',
   VITE_API_ADMIN_URL_HOMOLOG: import.meta.env.VITE_API_ADMIN_URL_HOMOLOG || '❌ não definida',
   VITE_API_ADMIN_URL_MAIN: import.meta.env.VITE_API_ADMIN_URL_MAIN || '❌ não definida',
   VITE_API_HOMOLOG_ADMIN_V2_URL: import.meta.env.VITE_API_HOMOLOG_ADMIN_V2_URL || '❌ não definida',
@@ -98,8 +100,24 @@ export const apiClientAdmin = createHttpClient({
 });
 
 // Cliente para API Usuários V2 (autenticação e gestão de usuários)
+// IMPORTANTE: Vite só injeta variáveis que começam com VITE_ durante o build
+// As variáveis devem ser passadas como ARG no Dockerfile durante o build
+const usuariosBaseURL = 
+  import.meta.env.VITE_API_USUARIOS_V2_URL || 
+  import.meta.env.VITE_API_HOMOLOG_USUARIOS_V2_URL || 
+  import.meta.env.VITE_API_HOMOLOG_USUARIOS_URL || 
+  "http://localhost:3333/api";
+
+// Log para debug das variáveis de ambiente (sempre, para debug em produção também)
+console.warn('[apiClientUsuarios] Configuração:', {
+  VITE_API_USUARIOS_V2_URL: import.meta.env.VITE_API_USUARIOS_V2_URL || '❌ não definida',
+  VITE_API_HOMOLOG_USUARIOS_V2_URL: import.meta.env.VITE_API_HOMOLOG_USUARIOS_V2_URL || '❌ não definida',
+  VITE_API_HOMOLOG_USUARIOS_URL: import.meta.env.VITE_API_HOMOLOG_USUARIOS_URL || '❌ não definida',
+  '✅ baseURL_usado': usuariosBaseURL,
+});
+
 export const apiClientUsuarios = createHttpClient({
-  baseURL: import.meta.env.VITE_API_HOMOLOG_USUARIOS_V2_URL || import.meta.env.VITE_API_HOMOLOG_USUARIOS_URL || "http://localhost:3333/api",
+  baseURL: usuariosBaseURL,
   enableAuth: true,
   enableLogging: true,
 });
@@ -108,6 +126,7 @@ export const apiClientUsuarios = createHttpClient({
 // IMPORTANTE: Vite só injeta variáveis que começam com VITE_ durante o build
 // As variáveis devem ser passadas como ARG no Dockerfile durante o build
 const clientesBaseURL = 
+  import.meta.env.VITE_API_CLIENTES_URL || 
   import.meta.env.VITE_API_CLIENTES_URL_HOMOLOG || 
   import.meta.env.VITE_API_CLIENTES_URL_MAIN || 
   import.meta.env.VITE_API_HOMOLOG_CLIENTES_V2_URL || 
@@ -117,6 +136,7 @@ const clientesBaseURL =
 // Log para debug das variáveis de ambiente (sempre, para debug em produção também)
 // Isso ajuda a identificar qual variável está sendo usada no deploy
 console.warn('[apiClientClientes] Configuração:', {
+  VITE_API_CLIENTES_URL: import.meta.env.VITE_API_CLIENTES_URL || '❌ não definida',
   VITE_API_CLIENTES_URL_HOMOLOG: import.meta.env.VITE_API_CLIENTES_URL_HOMOLOG || '❌ não definida',
   VITE_API_CLIENTES_URL_MAIN: import.meta.env.VITE_API_CLIENTES_URL_MAIN || '❌ não definida',
   VITE_API_HOMOLOG_CLIENTES_V2_URL: import.meta.env.VITE_API_HOMOLOG_CLIENTES_V2_URL || '❌ não definida',
