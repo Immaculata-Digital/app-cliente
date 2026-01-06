@@ -9,6 +9,7 @@
 
 import { apiClientUsuarios } from '../api-client/api-client-usuarios.instance';
 import Cookies from 'js-cookie';
+import { getSchemaFromHostname } from '@/utils/schema.utils';
 
 export interface LoginRequest {
   loginOrEmail: string;
@@ -40,10 +41,19 @@ class AuthService {
    * Faz login e armazena os tokens
    */
   async login(credentials: LoginRequest, rememberMe = false): Promise<LoginResponse> {
+    // Obter schema da URL
+    const schema = getSchemaFromHostname();
+    console.log('[authService.login] Schema extraído para login:', schema);
+
     const response = await apiClientUsuarios.post<LoginResponse>(
       '/auth/login',
       credentials,
-      { skipAuth: true }
+      { 
+        skipAuth: true,
+        headers: {
+          'X-Schema': schema
+        }
+      }
     );
 
     this.storeTokens(response, !rememberMe);
