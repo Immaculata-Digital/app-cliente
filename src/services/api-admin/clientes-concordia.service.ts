@@ -24,13 +24,23 @@ class ClientesConcordiaService {
       // Usa o schema fornecido diretamente (sem normalização)
       const normalizedSchema = schema;
       
+      console.log('[ClientesConcordiaService] Buscando nome do cliente pelo schema:', normalizedSchema);
+      
       const response = await apiClientAdmin.get<{ nome: string }>(
         `/clientes-concordia/schema/${normalizedSchema}`,
         { skipAuth: true } // Endpoint público
       );
       
+      console.log('[ClientesConcordiaService] Resposta recebida:', response);
+      
       return response?.nome || null;
-    } catch (error) {
+    } catch (error: any) {
+      // Se for 404, o schema não existe - isso é normal e não deve quebrar a aplicação
+      if (error?.status === 404 || error?.response?.status === 404) {
+        console.warn('[ClientesConcordiaService] Schema não encontrado:', schema);
+        return null;
+      }
+      
       console.error('[ClientesConcordiaService] Erro ao buscar nome do cliente:', error);
       return null;
     }
