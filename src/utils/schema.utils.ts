@@ -19,10 +19,6 @@ const DEFAULT_SCHEMA = import.meta.env.VITE_SCHEMA_DEFAULT ?? 'casona';
  */
 export function getSchemaFromHostname(): string {
   if (typeof window === 'undefined') {
-    console.log('[getSchemaFromHostname] Schema usando DEFAULT (window undefined):', {
-      schema: DEFAULT_SCHEMA,
-      origem: 'window undefined'
-    })
     return DEFAULT_SCHEMA;
   }
 
@@ -37,11 +33,6 @@ export function getSchemaFromHostname(): string {
     hostname === 'localhost' ||
     hostname === '127.0.0.1'
   ) {
-    console.log('[getSchemaFromHostname] Schema usando DEFAULT (dev/preview):', {
-      hostname,
-      schema: DEFAULT_SCHEMA,
-      origem: 'desenvolvimento/preview'
-    })
     return DEFAULT_SCHEMA;
   }
 
@@ -57,11 +48,6 @@ export function getSchemaFromHostname(): string {
     
     // Validar que é um nome de schema válido (letras, números, underscore, hífen)
     if (schema && /^[a-zA-Z_][a-zA-Z0-9_-]*$/.test(schema)) {
-      console.log('[getSchemaFromHostname] Schema extraído da URL:', {
-        hostname,
-        schema,
-        origem: 'concordiaerp.com'
-      })
       return schema;
     }
   }
@@ -75,20 +61,10 @@ export function getSchemaFromHostname(): string {
     
     // Ignora www
     if (subdomain !== 'www' && /^[a-zA-Z_][a-zA-Z0-9_-]*$/.test(subdomain)) {
-      console.log('[getSchemaFromHostname] Schema extraído do subdomínio:', {
-        hostname,
-        schema: subdomain,
-        origem: 'subdomínio'
-      })
       return subdomain;
     }
   }
 
-  console.log('[getSchemaFromHostname] Schema usando DEFAULT (fallback):', {
-    hostname,
-    schema: DEFAULT_SCHEMA,
-    origem: 'fallback padrão'
-  })
   return DEFAULT_SCHEMA;
 }
 

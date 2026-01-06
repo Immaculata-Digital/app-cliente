@@ -6,7 +6,7 @@
  */
 
 import { HttpClient } from "./http-client";
-import { authInterceptor, jsonResponseInterceptor, errorInterceptor, loggingInterceptor } from "./interceptors";
+import { authInterceptor, jsonResponseInterceptor, errorInterceptor, loggingInterceptor, schemaInterceptor } from "./interceptors";
 
 export interface HttpClientConfig {
   baseURL: string;
@@ -39,19 +39,19 @@ export function createHttpClient(config: HttpClientConfig): HttpClient {
     client.addRequestInterceptor(authInterceptor);
   }
 
+  // Adiciona interceptors customizados ANTES do logging para garantir ordem correta
+  if (config.customInterceptors?.request) {
+    config.customInterceptors.request.forEach((interceptor) => {
+      client.addRequestInterceptor(interceptor);
+    });
+  }
+
   if (config.enableLogging !== false && process.env.NODE_ENV === "development") {
     client.addRequestInterceptor(loggingInterceptor);
   }
 
   client.addResponseInterceptor(jsonResponseInterceptor);
   client.addErrorInterceptor(errorInterceptor);
-
-  // Adiciona interceptors customizados se fornecidos
-  if (config.customInterceptors?.request) {
-    config.customInterceptors.request.forEach((interceptor) => {
-      client.addRequestInterceptor(interceptor);
-    });
-  }
 
   if (config.customInterceptors?.response) {
     config.customInterceptors.response.forEach((interceptor) => {
@@ -124,7 +124,13 @@ export const apiClientUsuarios = createHttpClient({
   baseURL: usuariosBaseURL,
   enableAuth: true,
   enableLogging: true,
+  customInterceptors: {
+    request: [schemaInterceptor], // Adiciona X-Schema automaticamente para API de usuários
+  },
 });
+
+// GARANTE que o header X-Schema seja adicionado para API de usuários
+apiClientUsuarios.setShouldAddSchemaHeader(true);
 
 // Cliente para API Clientes V2 (movimentação de pontos e dados do cliente)
 // IMPORTANTE: Vite só injeta variáveis que começam com VITE_ durante o build

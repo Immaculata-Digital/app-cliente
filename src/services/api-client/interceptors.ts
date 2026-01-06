@@ -5,10 +5,12 @@
  * - Autenticação automática
  * - Tratamento de erros
  * - Logging
+ * - Schema header (X-Schema) para API de usuários
  */
 
 import { RequestConfig } from './http-client';
 import Cookies from 'js-cookie';
+import { getSchemaFromHostname } from '@/utils/schema.utils';
 
 /**
  * Adiciona o token de autenticação automaticamente nas requisições
@@ -93,5 +95,59 @@ export const loggingInterceptor = (config: RequestConfig): RequestConfig => {
     });
   }
   
+  return config;
+};
+
+/**
+ * Adiciona o header X-Schema automaticamente nas requisições
+ * Necessário para rotas de grupos e usuários na API de usuários
+ */
+export const schemaInterceptor = (config: RequestConfig): RequestConfig => {
+  // Só adiciona o schema se não for uma requisição skipAuth
+  if (config.skipAuth === true) {
+    return config;
+  }
+
+  try {
+    // Converte headers para objeto simples para facilitar manipulação
+    const existingHeaders = config.headers || {};
+    let headersObj: Record<string, string> = {};
+    
+    if (existingHeaders instanceof Headers) {
+      existingHeaders.forEach((value, key) => {
+        headersObj[key] = value;
+      });
+    } else if (Array.isArray(existingHeaders)) {
+      existingHeaders.forEach(([key, value]) => {
+        headersObj[key] = value;
+      });
+    } else {
+      headersObj = { ...(existingHeaders as Record<string, string>) };
+    }
+    
+    // Verifica se o header X-Schema já está presente (case-insensitive)
+    const headerKeys = Object.keys(headersObj);
+    const hasSchemaHeader = headerKeys.some(
+      key => key.toLowerCase() === 'x-schema'
+    );
+
+    if (!hasSchemaHeader) {
+      const schema = getSchemaFromHostname();
+      
+      // Preserva os headers existentes e adiciona X-Schema
+      const newHeaders: Record<string, string> = {
+        ...headersObj,
+        'X-Schema': schema,
+      };
+      
+      return {
+        ...config,
+        headers: newHeaders,
+      };
+    }
+  } catch (error) {
+    console.error('[Schema Interceptor] Erro ao processar schema:', error);
+  }
+
   return config;
 };

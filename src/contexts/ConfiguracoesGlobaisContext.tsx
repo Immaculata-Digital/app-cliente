@@ -59,7 +59,6 @@ function loadGoogleFont(fontName: string): void {
   );
   
   if (isSystemFont) {
-    console.log(`[ConfiguracoesGlobais] Fonte do sistema detectada: ${cleanFontName}, não precisa carregar`);
     return;
   }
   
@@ -70,7 +69,6 @@ function loadGoogleFont(fontName: string): void {
   const linkId = `google-font-${fontNameClean.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
   const existingLink = document.getElementById(linkId);
   if (existingLink) {
-    console.log(`[ConfiguracoesGlobais] Fonte já carregada: ${cleanFontName}`);
     return; // Já foi carregado
   }
   
@@ -81,17 +79,11 @@ function loadGoogleFont(fontName: string): void {
   link.href = `https://fonts.googleapis.com/css2?family=${fontNameClean}:wght@300;400;500;600;700&display=swap`;
   link.crossOrigin = 'anonymous';
   
-  // Adiciona evento para log quando carregar
-  link.onload = () => {
-    console.log(`[ConfiguracoesGlobais] Fonte do Google Fonts carregada com sucesso: ${cleanFontName}`);
-  };
-  
   link.onerror = () => {
     console.warn(`[ConfiguracoesGlobais] Erro ao carregar fonte do Google Fonts: ${cleanFontName}`);
   };
   
   document.head.appendChild(link);
-  console.log(`[ConfiguracoesGlobais] Carregando fonte do Google Fonts: ${cleanFontName}`);
 }
 
 /**
@@ -116,7 +108,6 @@ function updateFavicon(logoBase64?: string): void {
   link.href = logoBase64;
   
   document.head.appendChild(link);
-  console.log('[ConfiguracoesGlobais] Favicon atualizado com a logo');
 }
 
 /**
@@ -293,19 +284,15 @@ export function ConfiguracoesGlobaisProvider({ children }: { children: ReactNode
     setIsLoading(true);
     try {
       const schema = getSchemaFromHostname();
-      console.log('[ConfiguracoesGlobais] Schema detectado:', schema);
       
       const config = await configuracoesGlobaisService.getFirst(schema);
-      console.log('[ConfiguracoesGlobais] Configuração recebida:', config);
       
       if (config) {
-        console.log('[ConfiguracoesGlobais] Logo base64 presente?', !!config.logo_base64);
         setConfiguracoes(config);
         applyTheme(config);
         // Atualiza o favicon com a logo
         updateFavicon(config.logo_base64);
       } else {
-        console.log('[ConfiguracoesGlobais] Nenhuma configuração encontrada, usando padrão');
         // Aplica configuração padrão
         setConfiguracoes(DEFAULT_CONFIG);
         applyTheme(DEFAULT_CONFIG);

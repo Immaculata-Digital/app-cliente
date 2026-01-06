@@ -47,11 +47,9 @@ class ClienteService {
    */
   async getCliente(schema: string, id: number): Promise<ClienteData> {
     try {
-      console.log('[ClienteService] Buscando cliente:', { schema, id });
       const response = await apiClientClientes.get<ClienteData>(
         `/clientes/${schema}/${id}`
       );
-      console.log('[ClienteService] Cliente encontrado:', response);
       return response;
     } catch (error: any) {
       console.error('[ClienteService] Erro ao buscar cliente:', error);
