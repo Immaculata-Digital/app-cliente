@@ -94,20 +94,33 @@ function updateFavicon(logoBase64?: string): void {
     return;
   }
 
-  // Remove favicon existente se houver
-  const existingFavicon = document.querySelector('link[rel="icon"]') || 
-                          document.querySelector('link[rel="shortcut icon"]');
-  if (existingFavicon) {
-    existingFavicon.remove();
-  }
+  try {
+    // Remove favicon existente se houver
+    const existingFavicon = document.querySelector('link[rel*="icon"]') as HTMLLinkElement;
+    if (existingFavicon) {
+      existingFavicon.remove();
+    }
 
-  // Cria novo link para o favicon
-  const link = document.createElement('link');
-  link.rel = 'icon';
-  link.type = 'image/png'; // Assume PNG, mas funciona com outros formatos também
-  link.href = logoBase64;
-  
-  document.head.appendChild(link);
+    // Cria novo link para o favicon
+    const link = document.createElement('link');
+    link.rel = 'icon';
+    link.type = 'image/png'; // Favicons geralmente são PNG
+    link.href = logoBase64;
+    
+    document.head.appendChild(link);
+
+    // Também atualiza apple-touch-icon para dispositivos iOS
+    const existingAppleIcon = document.querySelector('link[rel*="apple-touch-icon"]') as HTMLLinkElement;
+    if (existingAppleIcon) {
+      existingAppleIcon.remove();
+    }
+    const appleIcon = document.createElement('link');
+    appleIcon.rel = 'apple-touch-icon';
+    appleIcon.href = logoBase64;
+    document.head.appendChild(appleIcon);
+  } catch (error) {
+    console.error('Erro ao atualizar favicon:', error);
+  }
 }
 
 /**
