@@ -46,7 +46,10 @@ class PasswordService {
   async forgotPassword(email: string): Promise<ForgotPasswordResponse> {
     return await apiClientUsuarios.post<ForgotPasswordResponse>(
       '/clientes/auth/password/forgot',
-      { email },
+      { 
+        email,
+        web_url: window.location.origin // URL base do front-end
+      },
       { skipAuth: true }
     );
   }
