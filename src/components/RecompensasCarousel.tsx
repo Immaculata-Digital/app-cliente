@@ -51,11 +51,11 @@ export function RecompensasCarousel({ itens }: RecompensasCarouselProps) {
                 <Card className="p-3 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
                   <div className="flex flex-col items-center gap-2">
                     {item.foto && (
-                      <div className="w-full bg-muted rounded-lg overflow-hidden">
+                      <div className="w-full aspect-square bg-muted rounded-lg overflow-hidden">
                         <img
                           src={item.foto}
                           alt={item.nome_item}
-                          className="w-full h-auto object-contain"
+                          className="w-full h-full object-cover"
                         />
                       </div>
                     )}
