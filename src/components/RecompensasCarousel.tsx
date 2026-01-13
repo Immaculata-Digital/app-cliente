@@ -48,7 +48,7 @@ export function RecompensasCarousel({ itens }: RecompensasCarouselProps) {
           <CarouselContent>
             {itens.map((item) => (
               <CarouselItem key={item.id_item_recompensa}>
-                <Card className="p-3 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+                <Card className="p-3 bg-muted/40 border-border/60">
                   <div className="flex flex-col items-center gap-2">
                     {item.foto && (
                       <div className="w-full aspect-square bg-muted rounded-lg overflow-hidden">

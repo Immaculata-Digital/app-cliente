@@ -215,7 +215,7 @@ const Registro = () => {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
         <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr]">
           <section className="space-y-6">
-            <div className="rounded-3xl bg-gradient-primary p-8 text-primary-foreground shadow-2xl">
+            <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-2xl md:p-10">
               {configuracoes?.logo_base64 ? (
                 <div className="mb-6 flex justify-center">
                   <img
@@ -225,53 +225,53 @@ const Registro = () => {
                   />
                 </div>
               ) : (
-                <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/70">Sistema de Fidelidade</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.35em] text-foreground">Sistema de Fidelidade</p>
               )}
-              <h1 className="mt-4 text-4xl font-semibold leading-tight">Seja muito bem-vindo(a)!</h1>
-              <p className="mt-3 text-base text-white/90">
+              <h1 className="mt-4 text-4xl font-semibold leading-tight text-foreground">Seja muito bem-vindo(a)!</h1>
+              <p className="mt-3 text-sm text-muted-foreground">
                 Acumule pontos, desbloqueie experiências exclusivas e mantenha tudo em um só lugar, mesmo que você já
                 seja cliente.
               </p>
               <div className="mt-6 flex flex-wrap items-center justify-start gap-3">
                 <a
                   href="#registro-form"
-                  className="inline-flex items-center justify-center rounded-full bg-white/15 px-6 py-2.5 text-sm font-semibold uppercase tracking-wide text-primary-foreground transition hover:bg-white/25"
+                  className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-semibold uppercase tracking-wide text-primary-foreground transition hover:bg-primary/90"
                 >
                   Quero me cadastrar
                 </a>
-                <span className="text-sm font-semibold uppercase tracking-wide text-white/70">ou</span>
+                <span className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">ou</span>
                 <Link
                   to="/login"
-                  className="inline-flex items-center justify-center rounded-full bg-white px-6 py-2.5 text-sm font-semibold uppercase tracking-wide text-primary transition hover:bg-white/90"
+                  className="inline-flex items-center justify-center rounded-full border border-primary bg-primary-foreground px-6 py-2.5 text-sm font-semibold uppercase tracking-wide text-primary transition hover:bg-primary-foreground/90"
                 >
                   já tenho conta
                 </Link>
               </div>
 
-              <ul className="mt-8 space-y-4 text-sm text-white/90">
+              <ul className="mt-8 space-y-4 text-sm text-muted-foreground">
                 <li className="flex items-start gap-3">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-xs font-bold">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs font-bold text-foreground">
                     1
                   </span>
                   Informe seus dados básicos para criarmos sua conta única.
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-xs font-bold">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs font-bold text-foreground">
                     2
                   </span>
                   Use o mesmo e-mail ou WhatsApp já usados nas lojas parceiras.
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-xs font-bold">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs font-bold text-foreground">
                     3
                   </span>
                   Acesse sua área exclusiva sempre que quiser acompanhar seus pontos.
                 </li>
               </ul>
 
-              <div className="mt-6 rounded-2xl border border-white/20 bg-white/10 p-4 text-sm text-white/95 backdrop-blur">
+              <div className="mt-6 rounded-2xl border border-border/60 bg-muted/40 p-4 text-sm text-foreground">
                 <p className="font-semibold">Usuário recorrente?</p>
-                <p className="text-white/80">
+                <p className="text-muted-foreground">
                   Entre com seu login para resgatar recompensas ou recuperar seus pontos em segundos.
                 </p>
               </div>
@@ -279,12 +279,10 @@ const Registro = () => {
 
             {/* Carrossel de recompensas */}
             {itensRecompensa.length > 0 && (
-              <div className="rounded-3xl border border-border/40 bg-card/80 p-6 shadow-lg backdrop-blur">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">Vantagens</p>
-                    <h2 className="text-lg font-semibold text-foreground">Recompensas em destaque</h2>
-                  </div>
+              <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-2xl md:p-10">
+                <div className="text-center md:text-left">
+                  <p className="text-xs font-semibold uppercase tracking-[0.35em] text-foreground">Vantagens</p>
+                  <h2 className="mt-3 text-3xl font-semibold text-foreground">Recompensas em destaque</h2>
                 </div>
                 <div className="mt-4">
                   <RecompensasCarousel itens={itensRecompensa} />
@@ -295,7 +293,7 @@ const Registro = () => {
 
           <section className="rounded-3xl border border-border/60 bg-card p-6 shadow-2xl md:p-10">
             <div className="text-center md:text-left">
-              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-primary">Cadastro rápido</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-foreground">Cadastro rápido</p>
               <h2 className="mt-3 text-3xl font-semibold text-foreground">Preencha seus dados</h2>
               <p className="text-sm text-muted-foreground">
                 Leva menos de 2 minutos e você já pode acompanhar sua fidelidade.
@@ -369,7 +367,6 @@ const Registro = () => {
                 <div className="space-y-2">
                   <Label>Senha</Label>
                   <PasswordInput {...register("senha")} error={errors.senha?.message} placeholder="Digite sua senha" />
-                  {errors.senha && <p className="text-sm text-destructive">{errors.senha.message}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -379,7 +376,6 @@ const Registro = () => {
                     error={errors.confirmar_senha?.message}
                     placeholder="Digite sua senha novamente"
                   />
-                  {errors.confirmar_senha && <p className="text-sm text-destructive">{errors.confirmar_senha.message}</p>}
                 </div>
               </div>
 
