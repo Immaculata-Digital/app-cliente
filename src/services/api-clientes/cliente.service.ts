@@ -58,9 +58,9 @@ class ClienteService {
   }
 
   /**
-   * Busca cliente por id_usuario
+   * Busca cliente por id_usuario (UUID)
    */
-  async getClienteByUsuario(schema: string, id_usuario: number): Promise<ClienteData | null> {
+  async getClienteByUsuario(schema: string, id_usuario: string): Promise<ClienteData | null> {
     try {
       const response = await apiClientClientes.get<ClienteData>(
         `/clientes/${schema}/usuario/${id_usuario}`

@@ -118,7 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Buscar cliente por id_usuario no schema padrão
             const schema = getSchemaFromHostname();
             console.log('[AuthContext] Buscando cliente por usuário:', { schema, userId: response.user.id });
-            const cliente = await clienteService.getClienteByUsuario(schema, parseInt(response.user.id, 10));
+            const cliente = await clienteService.getClienteByUsuario(schema, response.user.id);
             if (cliente) {
               clienteId = cliente.id_cliente;
               clienteNomeFinal = cliente.nome_completo || nomeCliente;
