@@ -24,6 +24,17 @@ export const registroSchema = z.object({
     errorMap: () => ({ message: "Selecione uma opção válida" })
   }),
   
+  data_nascimento: z.string()
+    .min(10, "Data de nascimento inválida")
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Data de nascimento deve estar no formato YYYY-MM-DD")
+    .refine((val) => {
+      const date = new Date(val);
+      const today = new Date();
+      const minDate = new Date();
+      minDate.setFullYear(today.getFullYear() - 120); // Máximo 120 anos
+      return date <= today && date >= minDate;
+    }, "Data de nascimento inválida"),
+  
   aceite_termos: z.boolean()
     .refine(val => val === true, "Você deve aceitar os termos de uso"),
   

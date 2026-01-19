@@ -7,6 +7,7 @@ export interface ClienteRegistroData {
   whatsapp: string;
   cep: string;
   sexo: 'M' | 'F' | 'O';
+  data_nascimento: string;
   aceite_termos: boolean;
   senha: string;
 }
@@ -30,6 +31,7 @@ export interface ClienteData {
   whatsapp: string;
   cep: string;
   sexo: 'M' | 'F';
+  data_nascimento?: string | null;
   saldo: number;
   aceite_termos: boolean;
   dt_cadastro: string;
@@ -95,6 +97,7 @@ class ClienteService {
         whatsapp: whatsappSemFormatacao,
         cep: cepSemFormatacao,
         sexo: data.sexo,
+        data_nascimento: data.data_nascimento,
         aceite_termos: data.aceite_termos,
         senha: data.senha,
       },

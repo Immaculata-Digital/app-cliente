@@ -47,6 +47,7 @@ const Registro = () => {
   const email = watch("email");
   const whatsapp = watch("whatsapp");
   const cep = watch("cep");
+  const dataNascimento = watch("data_nascimento");
   const senha = watch("senha");
   const confirmarSenha = watch("confirmar_senha");
 
@@ -62,6 +63,8 @@ const Registro = () => {
       cep &&
       /^\d{5}-\d{3}$/.test(cep) &&
       sexo &&
+      dataNascimento &&
+      /^\d{4}-\d{2}-\d{2}$/.test(dataNascimento) &&
       senha &&
       senha.length >= 10 &&
       /[A-Z]/.test(senha) &&
@@ -73,7 +76,7 @@ const Registro = () => {
       aceiteTermos === true &&
       Object.keys(errors).length === 0
     );
-  }, [nomeCompleto, email, whatsapp, cep, sexo, senha, confirmarSenha, aceiteTermos, errors]);
+  }, [nomeCompleto, email, whatsapp, cep, sexo, dataNascimento, senha, confirmarSenha, aceiteTermos, errors]);
 
   const handleDocumentoPendente = () => {
     alert("documento pendente");
@@ -176,6 +179,7 @@ const Registro = () => {
         whatsapp: registroData.whatsapp,
         cep: registroData.cep,
         sexo: registroData.sexo,
+        data_nascimento: registroData.data_nascimento,
         aceite_termos: registroData.aceite_termos,
         senha: registroData.senha,
         id_loja: parseInt(idLoja, 10),
@@ -364,7 +368,13 @@ const Registro = () => {
                   {errors.sexo && <p className="text-sm text-destructive">{errors.sexo.message}</p>}
                 </div>
 
-                <div className="hidden md:block" aria-hidden="true"></div>
+                <Input
+                  label="Data de Nascimento"
+                  type="date"
+                  {...register("data_nascimento")}
+                  error={errors.data_nascimento?.message}
+                  placeholder="YYYY-MM-DD"
+                />
 
                 <div className="space-y-2">
                   <Label>Senha</Label>
