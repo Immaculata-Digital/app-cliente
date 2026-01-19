@@ -20,7 +20,7 @@ export const registroSchema = z.object({
     .length(9, "CEP deve ter 8 dígitos")
     .regex(/^\d{5}-\d{3}$/, "CEP deve estar no formato 00000-000"),
   
-  sexo: z.enum(["M", "F", "O"], {
+  sexo: z.enum(["M", "F"], {
     errorMap: () => ({ message: "Selecione uma opção válida" })
   }),
   
@@ -39,7 +39,7 @@ export const registroSchema = z.object({
     .refine(val => val === true, "Você deve aceitar os termos de uso"),
   
   senha: z.string()
-    .min(10, "Senha deve ter pelo menos 10 caracteres")
+    .min(6, "Senha deve ter pelo menos 6 caracteres")
     .max(100, "Senha deve ter no máximo 100 caracteres")
     .regex(/[A-Z]/, "Senha deve conter pelo menos uma letra maiúscula")
     .regex(/[a-z]/, "Senha deve conter pelo menos uma letra minúscula")

@@ -66,7 +66,7 @@ const Registro = () => {
       dataNascimento &&
       /^\d{4}-\d{2}-\d{2}$/.test(dataNascimento) &&
       senha &&
-      senha.length >= 10 &&
+      senha.length >= 6 &&
       /[A-Z]/.test(senha) &&
       /[a-z]/.test(senha) &&
       /[0-9]/.test(senha) &&
@@ -355,14 +355,13 @@ const Registro = () => {
 
                 <div className="space-y-2">
                   <Label>Sexo</Label>
-                  <Select value={sexo} onValueChange={(value) => setValue("sexo", value as "M" | "F" | "O")}>
+                  <Select value={sexo} onValueChange={(value) => setValue("sexo", value as "M" | "F")}>
                     <SelectTrigger className={errors.sexo ? "border-destructive" : ""}>
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="M">Masculino</SelectItem>
                       <SelectItem value="F">Feminino</SelectItem>
-                      <SelectItem value="O">Outro</SelectItem>
                     </SelectContent>
                   </Select>
                   {errors.sexo && <p className="text-sm text-destructive">{errors.sexo.message}</p>}
