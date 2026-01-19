@@ -319,6 +319,7 @@ const Registro = () => {
                   {...register("nome_completo")}
                   error={errors.nome_completo?.message}
                   placeholder="Digite seu nome completo"
+                  className="!bg-[#ffffff]"
                 />
 
                 <Input
@@ -327,6 +328,7 @@ const Registro = () => {
                   {...register("email")}
                   error={errors.email?.message}
                   placeholder="seu@email.com"
+                  className="!bg-[#ffffff]"
                 />
 
                 <Input
@@ -335,6 +337,7 @@ const Registro = () => {
                   {...register("whatsapp")}
                   error={errors.whatsapp?.message}
                   placeholder="+55DDD000000000"
+                  className="!bg-[#ffffff]"
                   onChange={(e) => {
                     const formatted = formatWhatsApp(e.target.value);
                     setValue("whatsapp", formatted);
@@ -347,6 +350,7 @@ const Registro = () => {
                   {...register("cep")}
                   error={errors.cep?.message}
                   placeholder="00000-000"
+                  className="!bg-[#ffffff]"
                   onChange={(e) => {
                     const formatted = formatCEP(e.target.value);
                     setValue("cep", formatted);
@@ -356,7 +360,7 @@ const Registro = () => {
                 <div className="space-y-2">
                   <Label>Sexo</Label>
                   <Select value={sexo} onValueChange={(value) => setValue("sexo", value as "M" | "F")}>
-                    <SelectTrigger className={errors.sexo ? "border-destructive" : ""}>
+                    <SelectTrigger className={errors.sexo ? "border-destructive !bg-[#ffffff]" : "!bg-[#ffffff]"}>
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
                     <SelectContent>
@@ -373,11 +377,12 @@ const Registro = () => {
                   {...register("data_nascimento")}
                   error={errors.data_nascimento?.message}
                   placeholder="YYYY-MM-DD"
+                  className="!bg-[#ffffff]"
                 />
 
                 <div className="space-y-2">
                   <Label>Senha</Label>
-                  <PasswordInput {...register("senha")} error={errors.senha?.message} placeholder="Digite sua senha" />
+                  <PasswordInput {...register("senha")} error={errors.senha?.message} placeholder="Digite sua senha" className="!bg-[#ffffff]" />
                   {errors.senha && <p className="text-sm text-destructive">{errors.senha.message}</p>}
                 </div>
 
@@ -387,6 +392,7 @@ const Registro = () => {
                     {...register("confirmar_senha")}
                     error={errors.confirmar_senha?.message}
                     placeholder="Digite sua senha novamente"
+                    className="!bg-[#ffffff]"
                   />
                   {errors.confirmar_senha && <p className="text-sm text-destructive">{errors.confirmar_senha.message}</p>}
                 </div>
