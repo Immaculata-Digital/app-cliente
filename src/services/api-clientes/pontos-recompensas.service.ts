@@ -139,6 +139,7 @@ class PontosRecompensasService {
         return {
           id_item_recompensa: item.id_item_recompensa,
           nome_item: item.nome_item || '',
+          descricao: item.descricao || item.descricao_item || item.description || null,
           foto: item.imagem_item || null,
           qtd_pontos: item.quantidade_pontos || item.qtd_pontos || 0,
           nao_retirar_loja: Boolean(item.nao_retirar_loja),

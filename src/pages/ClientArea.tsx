@@ -412,7 +412,7 @@ const ClientArea = () => {
                   <Card key={item.id_item_recompensa} className="p-4 bg-card border-border">
                     <div className="flex flex-col gap-3">
                       {item.foto && (
-                        <div className="aspect-video bg-muted rounded-md overflow-hidden">
+                        <div className="aspect-square bg-muted rounded-md overflow-hidden">
                           <img 
                             src={item.foto} 
                             alt={item.nome_item}
@@ -422,6 +422,11 @@ const ClientArea = () => {
                       )}
                       <div>
                         <h3 className="font-semibold" style={{ color: 'hsl(var(--card-foreground))' }}>{item.nome_item}</h3>
+                        {item.descricao && (
+                          <p className="text-xs mt-1 text-muted-foreground line-clamp-2">
+                            {item.descricao}
+                          </p>
+                        )}
                         <p className="text-sm mt-1" style={{ color: 'hsl(var(--card-value-color))' }}>
                           {(item.qtd_pontos || 0).toLocaleString()} pontos
                         </p>

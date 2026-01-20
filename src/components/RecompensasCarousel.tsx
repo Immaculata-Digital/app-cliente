@@ -62,6 +62,11 @@ export function RecompensasCarousel({ itens }: RecompensasCarouselProps) {
                     <h3 className="font-semibold text-sm text-foreground text-center">
                       {item.nome_item}
                     </h3>
+                    {item.descricao && (
+                      <p className="text-xs text-muted-foreground text-center line-clamp-2">
+                        {item.descricao}
+                      </p>
+                    )}
                   </div>
                 </Card>
               </CarouselItem>

@@ -8,6 +8,7 @@
 export interface PontosRecompensa {
   id_item_recompensa: number;
   nome_item: string;
+  descricao?: string | null; // Descrição do item
   foto: string | null; // Base64 ou URL da imagem
   qtd_pontos: number;
   nao_retirar_loja?: boolean;
