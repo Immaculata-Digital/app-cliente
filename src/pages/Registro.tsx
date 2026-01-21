@@ -78,8 +78,12 @@ const Registro = () => {
     );
   }, [nomeCompleto, email, whatsapp, cep, sexo, dataNascimento, senha, confirmarSenha, aceiteTermos, errors]);
 
-  const handleDocumentoPendente = () => {
-    alert("documento pendente");
+  const abrirPoliticaPrivacidade = () => {
+    window.open("/pdfs/Politica de privacidade.pdf", "_blank");
+  };
+
+  const abrirTermosUso = () => {
+    window.open("/pdfs/TERMOS DE USO – CLUBE DE FIDELIDADE.pdf", "_blank");
   };
 
   useEffect(() => {
@@ -346,13 +350,13 @@ const Registro = () => {
                   htmlFor="aceite_termos"
                   className="text-sm leading-relaxed peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  Aceito os{" "}
-                  <button type="button" className="text-primary underline" onClick={handleDocumentoPendente}>
-                    termos de política de privacidade
+                  Aceito a{" "}
+                  <button type="button" className="text-primary underline" onClick={abrirPoliticaPrivacidade}>
+                    política de privacidade
                   </button>{" "}
-                  e as{" "}
-                  <button type="button" className="text-primary underline" onClick={handleDocumentoPendente}>
-                    regras do sistema de fidelidade
+                  e os{" "}
+                  <button type="button" className="text-primary underline" onClick={abrirTermosUso}>
+                    termos de uso do clube de fidelidade
                   </button>
                 </Label>
               </div>
