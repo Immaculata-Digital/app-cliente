@@ -23,7 +23,7 @@ export function usePontosRecompensas({ schema, id_cliente }: UsePontosRecompensa
     if (!id_cliente || id_cliente === 0) {
       const errorMessage = 'Usuário não autenticado. Faça login para acessar as recompensas.';
       setError(errorMessage);
-      console.error('Erro ao buscar recompensas:', errorMessage);
+      console.error('[usePontosRecompensas] Erro:', errorMessage);
       return undefined;
     }
 
@@ -31,14 +31,29 @@ export function usePontosRecompensas({ schema, id_cliente }: UsePontosRecompensa
     setError(null);
 
     try {
+      console.log('[usePontosRecompensas] Iniciando busca de recompensas:', { schema, id_cliente });
       const response = await pontosRecompensasService.getRecompensas(schema, id_cliente);
+      console.log('[usePontosRecompensas] Resposta recebida:', response);
+      
+      if (!response) {
+        throw new Error('Resposta vazia do serviço de recompensas');
+      }
+      
       setRecompensas(response);
       return response;
     } catch (err: any) {
       const errorMessage = err?.message || 'Erro ao buscar recompensas';
       setError(errorMessage);
-      console.error('Erro ao buscar recompensas:', err);
-      return undefined;
+      console.error('[usePontosRecompensas] Erro ao buscar recompensas:', err);
+      
+      // Define uma resposta vazia para não quebrar a UI
+      const emptyResponse: PontosRecompensasResponse = {
+        quantidade_pontos: 0,
+        codigo_cliente: `CLI-${id_cliente}`,
+        recompensas: [],
+      };
+      setRecompensas(emptyResponse);
+      return emptyResponse;
     } finally {
       setLoading(false);
     }

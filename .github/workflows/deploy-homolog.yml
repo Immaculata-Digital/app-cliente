@@ -46,7 +46,13 @@ jobs:
         run: |
           REPO_OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           docker build -t ghcr.io/${REPO_OWNER_LOWER}/${IMAGE_NAME}:homolog \
-            --build-arg VITE_API_USUARIOS_URL='${{ secrets.VITE_API_USUARIOS_URL_HOMOLOG }}' \
+            --build-arg VITE_API_ADMIN_URL_HOMOLOG='${{ secrets.VITE_API_ADMIN_URL_HOMOLOG }}' \
+            --build-arg VITE_API_ADMIN_URL_MAIN='${{ secrets.VITE_API_ADMIN_URL_MAIN }}' \
+            --build-arg VITE_API_USUARIOS_URL_HOMOLOG='${{ secrets.VITE_API_USUARIOS_URL_HOMOLOG }}' \
+            --build-arg VITE_API_USUARIOS_URL_MAIN='${{ secrets.VITE_API_USUARIOS_URL_MAIN }}' \
+            --build-arg VITE_API_CLIENTES_URL_HOMOLOG='${{ secrets.VITE_API_CLIENTES_URL_HOMOLOG }}' \
+            --build-arg VITE_API_CLIENTES_URL_MAIN='${{ secrets.VITE_API_CLIENTES_URL_MAIN }}' \
+            --build-arg VITE_SCHEMA_DEFAULT='${{ secrets.VITE_SCHEMA_DEFAULT }}' \
             .
 
       - name: Push imagem

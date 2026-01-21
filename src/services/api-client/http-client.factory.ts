@@ -6,7 +6,7 @@
  */
 
 import { HttpClient } from "./http-client";
-import { authInterceptor, jsonResponseInterceptor, errorInterceptor, loggingInterceptor } from "./interceptors";
+import { authInterceptor, jsonResponseInterceptor, errorInterceptor, loggingInterceptor, schemaInterceptor } from "./interceptors";
 
 export interface HttpClientConfig {
   baseURL: string;
@@ -39,19 +39,19 @@ export function createHttpClient(config: HttpClientConfig): HttpClient {
     client.addRequestInterceptor(authInterceptor);
   }
 
+  // Adiciona interceptors customizados ANTES do logging para garantir ordem correta
+  if (config.customInterceptors?.request) {
+    config.customInterceptors.request.forEach((interceptor) => {
+      client.addRequestInterceptor(interceptor);
+    });
+  }
+
   if (config.enableLogging !== false && process.env.NODE_ENV === "development") {
     client.addRequestInterceptor(loggingInterceptor);
   }
 
   client.addResponseInterceptor(jsonResponseInterceptor);
   client.addErrorInterceptor(errorInterceptor);
-
-  // Adiciona interceptors customizados se fornecidos
-  if (config.customInterceptors?.request) {
-    config.customInterceptors.request.forEach((interceptor) => {
-      client.addRequestInterceptor(interceptor);
-    });
-  }
 
   if (config.customInterceptors?.response) {
     config.customInterceptors.response.forEach((interceptor) => {
@@ -73,29 +73,97 @@ export function createHttpClient(config: HttpClientConfig): HttpClient {
  */
 
 // Cliente para API Admin V2 (gestão interna)
+// IMPORTANTE: Vite só injeta variáveis que começam com VITE_ durante o build
+// As variáveis devem ser passadas como ARG no Dockerfile durante o build
+const adminBaseURL = 
+  import.meta.env.VITE_API_ADMIN_V2_URL || 
+  import.meta.env.VITE_API_ADMIN_URL_HOMOLOG || 
+  import.meta.env.VITE_API_ADMIN_URL_MAIN || 
+  import.meta.env.VITE_API_HOMOLOG_ADMIN_V2_URL || 
+  import.meta.env.VITE_API_HOMOLOG_ADMIN_URL || 
+  "https://homolog-api-admin.immaculatadigital.com.br/api";
+
+// Log para debug das variáveis de ambiente (sempre, para debug em produção também)
+console.warn('[apiClientAdmin] Configuração:', {
+  VITE_API_ADMIN_V2_URL: import.meta.env.VITE_API_ADMIN_V2_URL || '❌ não definida',
+  VITE_API_ADMIN_URL_HOMOLOG: import.meta.env.VITE_API_ADMIN_URL_HOMOLOG || '❌ não definida',
+  VITE_API_ADMIN_URL_MAIN: import.meta.env.VITE_API_ADMIN_URL_MAIN || '❌ não definida',
+  VITE_API_HOMOLOG_ADMIN_V2_URL: import.meta.env.VITE_API_HOMOLOG_ADMIN_V2_URL || '❌ não definida',
+  VITE_API_HOMOLOG_ADMIN_URL: import.meta.env.VITE_API_HOMOLOG_ADMIN_URL || '❌ não definida',
+  '✅ baseURL_usado': adminBaseURL,
+});
+
 export const apiClientAdmin = createHttpClient({
-  baseURL: import.meta.env.VITE_API_HOMOLOG_ADMIN_V2_URL || import.meta.env.VITE_API_HOMOLOG_ADMIN_URL || "https://homolog-api-admin.immaculatadigital.com.br/api",
+  baseURL: adminBaseURL,
   enableAuth: true,
   enableLogging: true,
 });
 
 // Cliente para API Usuários V2 (autenticação e gestão de usuários)
-export const apiClientUsuarios = createHttpClient({
-  baseURL: import.meta.env.VITE_API_HOMOLOG_USUARIOS_V2_URL || import.meta.env.VITE_API_HOMOLOG_USUARIOS_URL || "http://localhost:3333/api",
-  enableAuth: true,
-  enableLogging: true,
+// IMPORTANTE: Vite só injeta variáveis que começam com VITE_ durante o build
+// As variáveis devem ser passadas como ARG no Dockerfile durante o build
+const usuariosBaseURL = 
+  import.meta.env.VITE_API_USUARIOS_V2_URL || 
+  import.meta.env.VITE_API_USUARIOS_URL_HOMOLOG || 
+  import.meta.env.VITE_API_USUARIOS_URL_MAIN || 
+  import.meta.env.VITE_API_HOMOLOG_USUARIOS_V2_URL || 
+  import.meta.env.VITE_API_HOMOLOG_USUARIOS_URL || 
+  "http://localhost:3333/api";
+
+// Log para debug das variáveis de ambiente (sempre, para debug em produção também)
+console.warn('[apiClientUsuarios] Configuração:', {
+  VITE_API_USUARIOS_V2_URL: import.meta.env.VITE_API_USUARIOS_V2_URL || '❌ não definida',
+  VITE_API_USUARIOS_URL_HOMOLOG: import.meta.env.VITE_API_USUARIOS_URL_HOMOLOG || '❌ não definida',
+  VITE_API_USUARIOS_URL_MAIN: import.meta.env.VITE_API_USUARIOS_URL_MAIN || '❌ não definida',
+  VITE_API_HOMOLOG_USUARIOS_V2_URL: import.meta.env.VITE_API_HOMOLOG_USUARIOS_V2_URL || '❌ não definida',
+  VITE_API_HOMOLOG_USUARIOS_URL: import.meta.env.VITE_API_HOMOLOG_USUARIOS_URL || '❌ não definida',
+  '✅ baseURL_usado': usuariosBaseURL,
 });
 
+export const apiClientUsuarios = createHttpClient({
+  baseURL: usuariosBaseURL,
+  enableAuth: true,
+  enableLogging: true,
+  customInterceptors: {
+    request: [schemaInterceptor], // Adiciona X-Schema automaticamente para API de usuários
+  },
+});
+
+// GARANTE que o header X-Schema seja adicionado para API de usuários
+apiClientUsuarios.setShouldAddSchemaHeader(true);
+
 // Cliente para API Clientes V2 (movimentação de pontos e dados do cliente)
+// IMPORTANTE: Vite só injeta variáveis que começam com VITE_ durante o build
+// As variáveis devem ser passadas como ARG no Dockerfile durante o build
+const clientesBaseURL = 
+  import.meta.env.VITE_API_CLIENTES_URL || 
+  import.meta.env.VITE_API_CLIENTES_URL_HOMOLOG || 
+  import.meta.env.VITE_API_CLIENTES_URL_MAIN || 
+  import.meta.env.VITE_API_HOMOLOG_CLIENTES_V2_URL || 
+  import.meta.env.VITE_API_HOMOLOG_CLIENTES_URL || 
+  "https://homolog-api-clientes.immaculatadigital.com.br/api";
+
+// Log para debug das variáveis de ambiente (sempre, para debug em produção também)
+// Isso ajuda a identificar qual variável está sendo usada no deploy
+console.warn('[apiClientClientes] Configuração:', {
+  VITE_API_CLIENTES_URL: import.meta.env.VITE_API_CLIENTES_URL || '❌ não definida',
+  VITE_API_CLIENTES_URL_HOMOLOG: import.meta.env.VITE_API_CLIENTES_URL_HOMOLOG || '❌ não definida',
+  VITE_API_CLIENTES_URL_MAIN: import.meta.env.VITE_API_CLIENTES_URL_MAIN || '❌ não definida',
+  VITE_API_HOMOLOG_CLIENTES_V2_URL: import.meta.env.VITE_API_HOMOLOG_CLIENTES_V2_URL || '❌ não definida',
+  VITE_API_HOMOLOG_CLIENTES_URL: import.meta.env.VITE_API_HOMOLOG_CLIENTES_URL || '❌ não definida',
+  '✅ baseURL_usado': clientesBaseURL,
+});
+
 export const apiClientClientes = createHttpClient({
-  baseURL: import.meta.env.VITE_API_HOMOLOG_CLIENTES_V2_URL || import.meta.env.VITE_API_HOMOLOG_CLIENTES_URL || "https://homolog-api-clientes.immaculatadigital.com.br/api",
+  baseURL: clientesBaseURL,
   enableAuth: true,
   enableLogging: true,
 });
 
 // Cliente sem autenticação (para endpoints públicos)
+// Usa a mesma URL da API Admin
 export const apiClientPublic = createHttpClient({
-  baseURL: import.meta.env.VITE_API_HOMOLOG_ADMIN_V2_URL || import.meta.env.VITE_API_HOMOLOG_ADMIN_URL || "https://homolog-api-admin.immaculatadigital.com.br/api",
+  baseURL: adminBaseURL,
   enableAuth: false,
   enableLogging: false,
 });

@@ -13,9 +13,7 @@ import { clienteService } from "@/services/api-clientes";
 import type { PontosRecompensa } from "@/types/cliente-pontos-recompensas";
 import type { CreateMovimentacaoRequest, ResgateResponse } from "@/types/cliente-pontos-movimentacao";
 import type { ClienteData } from "@/services/api-clientes/cliente.service";
-
-// Schema tenant padrão (multi-tenant)
-const TENANT_SCHEMA = "casona";
+import { getSchemaFromHostname } from "@/utils/schema.utils";
 
 type ModalType = "codigo" | "confirmar-resgate" | null;
 type ModalContext = "resgate" | "somar-pontos";
@@ -37,8 +35,9 @@ const ClientArea = () => {
   const [itensComCodigo, setItensComCodigo] = useState<Map<number, ResgateResponse>>(new Map());
   const codigosVerificadosRef = useRef<Set<number>>(new Set());
 
+  const schema = getSchemaFromHostname();
   const { loading, recompensas, fetchRecompensas } = usePontosRecompensas({
-    schema: TENANT_SCHEMA,
+    schema: schema,
     id_cliente: user?.clienteId || 0,
   });
 
@@ -54,14 +53,29 @@ const ClientArea = () => {
   // Buscar dados do cliente apenas uma vez
   useEffect(() => {
     const buscarDadosCliente = async () => {
-      if (!user?.clienteId || loadingCliente || clienteData) return;
+      if (!user?.clienteId || loadingCliente || clienteData) {
+        console.log('[ClientArea] Pulando busca de cliente:', { 
+          temClienteId: !!user?.clienteId, 
+          loadingCliente, 
+          temClienteData: !!clienteData 
+        });
+        return;
+      }
       
       setLoadingCliente(true);
       try {
-        const cliente = await clienteService.getCliente(TENANT_SCHEMA, user.clienteId);
+        console.log('[ClientArea] Buscando dados do cliente:', { schema, clienteId: user.clienteId });
+        const cliente = await clienteService.getCliente(schema, user.clienteId);
+        console.log('[ClientArea] Dados do cliente recebidos:', cliente);
         setClienteData(cliente);
-      } catch (error) {
+      } catch (error: any) {
         console.error('[ClientArea] Erro ao buscar dados do cliente:', error);
+        // Mostra toast de erro para o usuário
+        toast({
+          variant: "destructive",
+          title: "Erro ao carregar dados",
+          description: error?.message || "Não foi possível carregar os dados do cliente.",
+        });
       } finally {
         setLoadingCliente(false);
       }
@@ -75,9 +89,25 @@ const ClientArea = () => {
 
   // Buscar recompensas apenas uma vez quando o cliente estiver disponível
   useEffect(() => {
-    if (!isLoading && user?.clienteId && !loading && !recompensas) {
-      fetchRecompensas();
-    }
+    const buscarRecompensas = async () => {
+      if (!isLoading && user?.clienteId && !loading) {
+        console.log('[ClientArea] Buscando recompensas:', { 
+          schema, 
+          clienteId: user.clienteId, 
+          jaTemRecompensas: !!recompensas 
+        });
+        
+        // Sempre tenta buscar, mesmo se já tiver recompensas (para atualizar)
+        try {
+          await fetchRecompensas();
+        } catch (error: any) {
+          console.error('[ClientArea] Erro ao buscar recompensas:', error);
+          // Não mostra toast aqui para não poluir a UI, o hook já trata
+        }
+      }
+    };
+
+    buscarRecompensas();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, user?.clienteId]);
 
@@ -103,7 +133,7 @@ const ClientArea = () => {
       for (const item of itensParaVerificar) {
         try {
           const codigoExistente = await pontosMovimentacaoService.buscarCodigoExistente(
-            TENANT_SCHEMA,
+            schema,
             user.clienteId,
             item.id_item_recompensa
           );
@@ -178,7 +208,7 @@ const ClientArea = () => {
       if (!codigoExistente) {
         // Se não está no cache, buscar na API
         codigoExistente = await pontosMovimentacaoService.buscarCodigoExistente(
-          TENANT_SCHEMA,
+          schema,
           user.clienteId,
           item.id_item_recompensa
         );
@@ -231,7 +261,7 @@ const ClientArea = () => {
 
     try {
       const resposta = await pontosMovimentacaoService.resgatarRecompensa(
-        TENANT_SCHEMA,
+        schema,
         user.clienteId,
         itemSelecionado.id_item_recompensa,
         `Resgate de ${itemSelecionado.nome_item}`
@@ -382,7 +412,7 @@ const ClientArea = () => {
                   <Card key={item.id_item_recompensa} className="p-4 bg-card border-border">
                     <div className="flex flex-col gap-3">
                       {item.foto && (
-                        <div className="aspect-video bg-muted rounded-md overflow-hidden">
+                        <div className="aspect-square bg-muted rounded-md overflow-hidden">
                           <img 
                             src={item.foto} 
                             alt={item.nome_item}
@@ -392,6 +422,11 @@ const ClientArea = () => {
                       )}
                       <div>
                         <h3 className="font-semibold" style={{ color: 'hsl(var(--card-foreground))' }}>{item.nome_item}</h3>
+                        {item.descricao && (
+                          <p className="text-xs mt-1 text-muted-foreground line-clamp-2">
+                            {item.descricao}
+                          </p>
+                        )}
                         <p className="text-sm mt-1" style={{ color: 'hsl(var(--card-value-color))' }}>
                           {(item.qtd_pontos || 0).toLocaleString()} pontos
                         </p>

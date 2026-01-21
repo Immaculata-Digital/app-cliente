@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { RecompensasCarousel } from "@/components/RecompensasCarousel";
 import type { PontosRecompensa } from "@/types/cliente-pontos-recompensas";
 import { useConfiguracoesGlobais } from "@/contexts/ConfiguracoesGlobaisContext";
+import { getSchemaFromHostname } from "@/utils/schema.utils";
 
 const Registro = () => {
   const [searchParams] = useSearchParams();
@@ -46,6 +47,7 @@ const Registro = () => {
   const email = watch("email");
   const whatsapp = watch("whatsapp");
   const cep = watch("cep");
+  const dataNascimento = watch("data_nascimento");
   const senha = watch("senha");
   const confirmarSenha = watch("confirmar_senha");
 
@@ -61,8 +63,10 @@ const Registro = () => {
       cep &&
       /^\d{5}-\d{3}$/.test(cep) &&
       sexo &&
+      dataNascimento &&
+      /^\d{4}-\d{2}-\d{2}$/.test(dataNascimento) &&
       senha &&
-      senha.length >= 10 &&
+      senha.length >= 6 &&
       /[A-Z]/.test(senha) &&
       /[a-z]/.test(senha) &&
       /[0-9]/.test(senha) &&
@@ -72,10 +76,14 @@ const Registro = () => {
       aceiteTermos === true &&
       Object.keys(errors).length === 0
     );
-  }, [nomeCompleto, email, whatsapp, cep, sexo, senha, confirmarSenha, aceiteTermos, errors]);
+  }, [nomeCompleto, email, whatsapp, cep, sexo, dataNascimento, senha, confirmarSenha, aceiteTermos, errors]);
 
-  const handleDocumentoPendente = () => {
-    alert("documento pendente");
+  const abrirPoliticaPrivacidade = () => {
+    window.open("/pdfs/Politica de privacidade.pdf", "_blank");
+  };
+
+  const abrirTermosUso = () => {
+    window.open("/pdfs/TERMOS DE USO – CLUBE DE FIDELIDADE.pdf", "_blank");
   };
 
   useEffect(() => {
@@ -104,7 +112,8 @@ const Registro = () => {
           return;
         }
 
-        const lojaExiste = await lojaService.lojaExiste("casona", idLojaNumero);
+        const schema = getSchemaFromHostname();
+        const lojaExiste = await lojaService.lojaExiste(schema, idLojaNumero);
         if (!lojaExiste) {
           toast({
             title: "ID inválido",
@@ -132,8 +141,9 @@ const Registro = () => {
   useEffect(() => {
     const buscarItens = async () => {
       try {
-        // Usando o schema padrão "casona" (mesmo usado no registro)
-        const itens = await pontosRecompensasService.getItensDisponiveis("casona");
+        // Usando o schema padrão (configurado via VITE_SCHEMA_DEFAULT)
+        const schema = getSchemaFromHostname();
+        const itens = await pontosRecompensasService.getItensDisponiveis(schema);
         setItensRecompensa(itens);
       } catch (error) {
         // Silenciosamente ignora erros ao buscar itens (não é crítico)
@@ -165,13 +175,15 @@ const Registro = () => {
       }
 
       const { confirmar_senha, ...registroData } = data;
+      const schema = getSchemaFromHostname();
 
-      await clienteService.registrar("casona", {
+      await clienteService.registrar(schema, {
         nome_completo: registroData.nome_completo,
         email: registroData.email,
         whatsapp: registroData.whatsapp,
         cep: registroData.cep,
         sexo: registroData.sexo,
+        data_nascimento: registroData.data_nascimento,
         aceite_termos: registroData.aceite_termos,
         senha: registroData.senha,
         id_loja: parseInt(idLoja, 10),
@@ -211,74 +223,12 @@ const Registro = () => {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
         <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr]">
           <section className="space-y-6">
-            <div className="rounded-3xl bg-gradient-primary p-8 text-primary-foreground shadow-2xl">
-              {configuracoes?.logo_base64 ? (
-                <div className="mb-6 flex justify-center">
-                  <img
-                    src={configuracoes.logo_base64}
-                    alt="Logo do sistema de fidelidade"
-                    className="h-20 w-auto max-w-[220px] object-contain drop-shadow-lg"
-                  />
-                </div>
-              ) : (
-                <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/70">Sistema de Fidelidade</p>
-              )}
-              <h1 className="mt-4 text-4xl font-semibold leading-tight">Seja muito bem-vindo(a)!</h1>
-              <p className="mt-3 text-base text-white/90">
-                Acumule pontos, desbloqueie experiências exclusivas e mantenha tudo em um só lugar, mesmo que você já
-                seja cliente.
-              </p>
-              <div className="mt-6 flex flex-wrap items-center justify-start gap-3">
-                <a
-                  href="#registro-form"
-                  className="inline-flex items-center justify-center rounded-full bg-white/15 px-6 py-2.5 text-sm font-semibold uppercase tracking-wide text-primary-foreground transition hover:bg-white/25"
-                >
-                  Quero me cadastrar
-                </a>
-                <span className="text-sm font-semibold uppercase tracking-wide text-white/70">ou</span>
-                <Link
-                  to="/login"
-                  className="inline-flex items-center justify-center rounded-full bg-white px-6 py-2.5 text-sm font-semibold uppercase tracking-wide text-primary transition hover:bg-white/90"
-                >
-                  já tenho conta
-                </Link>
-              </div>
-
-              <ul className="mt-8 space-y-4 text-sm text-white/90">
-                <li className="flex items-start gap-3">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-xs font-bold">
-                    1
-                  </span>
-                  Informe seus dados básicos para criarmos sua conta única.
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-xs font-bold">
-                    2
-                  </span>
-                  Use o mesmo e-mail ou WhatsApp já usados nas lojas parceiras.
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-xs font-bold">
-                    3
-                  </span>
-                  Acesse sua área exclusiva sempre que quiser acompanhar seus pontos.
-                </li>
-              </ul>
-
-              <div className="mt-6 rounded-2xl border border-white/20 bg-white/10 p-4 text-sm text-white/95 backdrop-blur">
-                <p className="font-semibold">Usuário recorrente?</p>
-                <p className="text-white/80">
-                  Entre com seu login para resgatar recompensas ou recuperar seus pontos em segundos.
-                </p>
-              </div>
-            </div>
-
             {/* Carrossel de recompensas */}
             {itensRecompensa.length > 0 && (
-              <div className="rounded-3xl border border-border/40 bg-card/80 p-6 shadow-lg backdrop-blur">
+              <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-2xl md:p-10">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">Vantagens</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.3em] text-card-foreground">Bem vindo(a) ao clube!</p>
                     <h2 className="text-lg font-semibold text-foreground">Recompensas em destaque</h2>
                   </div>
                 </div>
@@ -291,7 +241,7 @@ const Registro = () => {
 
           <section className="rounded-3xl border border-border/60 bg-card p-6 shadow-2xl md:p-10">
             <div className="text-center md:text-left">
-              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-primary">Cadastro rápido</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-card-foreground">Cadastro rápido</p>
               <h2 className="mt-3 text-3xl font-semibold text-foreground">Preencha seus dados</h2>
               <p className="text-sm text-muted-foreground">
                 Leva menos de 2 minutos e você já pode acompanhar sua fidelidade.
@@ -311,6 +261,7 @@ const Registro = () => {
                   {...register("nome_completo")}
                   error={errors.nome_completo?.message}
                   placeholder="Digite seu nome completo"
+                  className="!bg-[#ffffff]"
                 />
 
                 <Input
@@ -319,6 +270,7 @@ const Registro = () => {
                   {...register("email")}
                   error={errors.email?.message}
                   placeholder="seu@email.com"
+                  className="!bg-[#ffffff]"
                 />
 
                 <Input
@@ -327,6 +279,7 @@ const Registro = () => {
                   {...register("whatsapp")}
                   error={errors.whatsapp?.message}
                   placeholder="+55DDD000000000"
+                  className="!bg-[#ffffff]"
                   onChange={(e) => {
                     const formatted = formatWhatsApp(e.target.value);
                     setValue("whatsapp", formatted);
@@ -339,6 +292,7 @@ const Registro = () => {
                   {...register("cep")}
                   error={errors.cep?.message}
                   placeholder="00000-000"
+                  className="!bg-[#ffffff]"
                   onChange={(e) => {
                     const formatted = formatCEP(e.target.value);
                     setValue("cep", formatted);
@@ -347,24 +301,30 @@ const Registro = () => {
 
                 <div className="space-y-2">
                   <Label>Sexo</Label>
-                  <Select value={sexo} onValueChange={(value) => setValue("sexo", value as "M" | "F" | "O")}>
-                    <SelectTrigger className={errors.sexo ? "border-destructive" : ""}>
+                  <Select value={sexo} onValueChange={(value) => setValue("sexo", value as "M" | "F")}>
+                    <SelectTrigger className={errors.sexo ? "border-destructive !bg-[#ffffff]" : "!bg-[#ffffff]"}>
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="M">Masculino</SelectItem>
                       <SelectItem value="F">Feminino</SelectItem>
-                      <SelectItem value="O">Outro</SelectItem>
                     </SelectContent>
                   </Select>
                   {errors.sexo && <p className="text-sm text-destructive">{errors.sexo.message}</p>}
                 </div>
 
-                <div className="hidden md:block" aria-hidden="true"></div>
+                <Input
+                  label="Data de Nascimento"
+                  type="date"
+                  {...register("data_nascimento")}
+                  error={errors.data_nascimento?.message}
+                  placeholder="YYYY-MM-DD"
+                  className="!bg-[#ffffff]"
+                />
 
                 <div className="space-y-2">
                   <Label>Senha</Label>
-                  <PasswordInput {...register("senha")} error={errors.senha?.message} placeholder="Digite sua senha" />
+                  <PasswordInput {...register("senha")} error={errors.senha?.message} placeholder="Digite sua senha" className="!bg-[#ffffff]" />
                   {errors.senha && <p className="text-sm text-destructive">{errors.senha.message}</p>}
                 </div>
 
@@ -374,6 +334,7 @@ const Registro = () => {
                     {...register("confirmar_senha")}
                     error={errors.confirmar_senha?.message}
                     placeholder="Digite sua senha novamente"
+                    className="!bg-[#ffffff]"
                   />
                   {errors.confirmar_senha && <p className="text-sm text-destructive">{errors.confirmar_senha.message}</p>}
                 </div>
@@ -389,13 +350,13 @@ const Registro = () => {
                   htmlFor="aceite_termos"
                   className="text-sm leading-relaxed peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  Aceito os{" "}
-                  <button type="button" className="text-primary underline" onClick={handleDocumentoPendente}>
-                    termos de política de privacidade
+                  Aceito a{" "}
+                  <button type="button" className="text-primary underline" onClick={abrirPoliticaPrivacidade}>
+                    política de privacidade
                   </button>{" "}
-                  e as{" "}
-                  <button type="button" className="text-primary underline" onClick={handleDocumentoPendente}>
-                    regras do sistema de fidelidade
+                  e os{" "}
+                  <button type="button" className="text-primary underline" onClick={abrirTermosUso}>
+                    termos de uso do clube de fidelidade
                   </button>
                 </Label>
               </div>

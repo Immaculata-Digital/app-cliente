@@ -2,15 +2,20 @@
  * Utilidades para determinar o schema baseado no subdomínio
  */
 
-const DEFAULT_SCHEMA = 'casona';
+const DEFAULT_SCHEMA = import.meta.env.VITE_SCHEMA_DEFAULT ?? 'casona';
 
 /**
  * Determina o schema baseado no hostname atual
  * 
+ * Padrões suportados:
+ * - HOMOLOG: homolog-nome.concordiaerp.com → extrai "nome"
+ * - PROD: nome.concordiaerp.com → extrai "nome"
+ * 
  * Regras:
- * - Se for preview--, *.lovable.*, *.lovableproject.*, homolog-app-admin ou localhost: usa casona
+ * - Se for preview--, *.lovable.*, *.lovableproject.*, homolog-app-admin ou localhost: usa DEFAULT_SCHEMA
+ * - Se for um domínio concordiaerp.com: extrai o schema removendo prefixo "homolog-" se existir
  * - Se tiver subdomínio válido: usa o subdomínio como schema
- * - Caso contrário: usa casona
+ * - Caso contrário: usa DEFAULT_SCHEMA
  */
 export function getSchemaFromHostname(): string {
   if (typeof window === 'undefined') {
@@ -31,7 +36,23 @@ export function getSchemaFromHostname(): string {
     return DEFAULT_SCHEMA;
   }
 
-  // Extrai o subdomínio
+  // Se for um domínio concordiaerp.com (homolog ou prod)
+  if (hostname.includes('.concordiaerp.com')) {
+    // Remove o domínio base
+    let schema = hostname.replace('.concordiaerp.com', '');
+    
+    // Remove prefixo "homolog-" se existir
+    if (schema.startsWith('homolog-')) {
+      schema = schema.replace('homolog-', '');
+    }
+    
+    // Validar que é um nome de schema válido (letras, números, underscore, hífen)
+    if (schema && /^[a-zA-Z_][a-zA-Z0-9_-]*$/.test(schema)) {
+      return schema;
+    }
+  }
+
+  // Fallback: extrai o subdomínio (para desenvolvimento)
   const parts = hostname.split('.');
   
   // Se tem mais de 2 partes (ex: subdomain.domain.com), o primeiro é o subdomínio
@@ -39,7 +60,7 @@ export function getSchemaFromHostname(): string {
     const subdomain = parts[0];
     
     // Ignora www
-    if (subdomain !== 'www') {
+    if (subdomain !== 'www' && /^[a-zA-Z_][a-zA-Z0-9_-]*$/.test(subdomain)) {
       return subdomain;
     }
   }

@@ -48,20 +48,25 @@ export function RecompensasCarousel({ itens }: RecompensasCarouselProps) {
           <CarouselContent>
             {itens.map((item) => (
               <CarouselItem key={item.id_item_recompensa}>
-                <Card className="p-3 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+                <Card className="p-3 bg-card border-border">
                   <div className="flex flex-col items-center gap-2">
                     {item.foto && (
-                      <div className="w-full bg-muted rounded-lg overflow-hidden">
+                      <div className="w-full aspect-square bg-muted rounded-lg overflow-hidden">
                         <img
                           src={item.foto}
                           alt={item.nome_item}
-                          className="w-full h-auto object-contain"
+                          className="w-full h-full object-cover"
                         />
                       </div>
                     )}
                     <h3 className="font-semibold text-sm text-foreground text-center">
                       {item.nome_item}
                     </h3>
+                    {item.descricao && (
+                      <p className="text-xs text-muted-foreground text-center line-clamp-2">
+                        {item.descricao}
+                      </p>
+                    )}
                   </div>
                 </Card>
               </CarouselItem>

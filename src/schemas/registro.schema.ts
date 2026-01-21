@@ -20,15 +20,26 @@ export const registroSchema = z.object({
     .length(9, "CEP deve ter 8 dígitos")
     .regex(/^\d{5}-\d{3}$/, "CEP deve estar no formato 00000-000"),
   
-  sexo: z.enum(["M", "F", "O"], {
+  sexo: z.enum(["M", "F"], {
     errorMap: () => ({ message: "Selecione uma opção válida" })
   }),
+  
+  data_nascimento: z.string()
+    .min(10, "Data de nascimento inválida")
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Data de nascimento deve estar no formato YYYY-MM-DD")
+    .refine((val) => {
+      const date = new Date(val);
+      const today = new Date();
+      const minDate = new Date();
+      minDate.setFullYear(today.getFullYear() - 120); // Máximo 120 anos
+      return date <= today && date >= minDate;
+    }, "Data de nascimento inválida"),
   
   aceite_termos: z.boolean()
     .refine(val => val === true, "Você deve aceitar os termos de uso"),
   
   senha: z.string()
-    .min(10, "Senha deve ter pelo menos 10 caracteres")
+    .min(6, "Senha deve ter pelo menos 6 caracteres")
     .max(100, "Senha deve ter no máximo 100 caracteres")
     .regex(/[A-Z]/, "Senha deve conter pelo menos uma letra maiúscula")
     .regex(/[a-z]/, "Senha deve conter pelo menos uma letra minúscula")

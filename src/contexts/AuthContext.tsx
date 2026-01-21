@@ -5,6 +5,7 @@ import { Funcionalidade } from "@/types/funcionalidade";
 import { authService } from "@/services/api-usuarios";
 import { clienteService } from "@/services/api-clientes";
 import Cookies from "js-cookie";
+import { getSchemaFromHostname } from "@/utils/schema.utils";
 
 export interface User {
   id: number;
@@ -110,11 +111,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         let clienteNomeFinal = nomeCliente;
 
         try {
-          // Buscar cliente por id_usuario no schema padrão
-          const cliente = await clienteService.getClienteByUsuario("casona", parseInt(response.user.id, 10));
-          if (cliente) {
-            clienteId = cliente.id_cliente;
-            clienteNomeFinal = cliente.nome_completo || nomeCliente;
+          // Verificar se está no cliente (não no servidor)
+          if (typeof window === 'undefined') {
+            console.warn('[AuthContext] Executando no servidor, pulando busca de cliente');
+          } else {
+            // Buscar cliente por id_usuario no schema padrão
+            const schema = getSchemaFromHostname();
+            console.log('[AuthContext] Buscando cliente por usuário:', { schema, userId: response.user.id });
+            const cliente = await clienteService.getClienteByUsuario(schema, response.user.id);
+            if (cliente) {
+              clienteId = cliente.id_cliente;
+              clienteNomeFinal = cliente.nome_completo || nomeCliente;
+              console.log('[AuthContext] Cliente encontrado:', { clienteId, nome: clienteNomeFinal });
+            } else {
+              console.log('[AuthContext] Cliente não encontrado para o usuário');
+            }
           }
         } catch (error) {
           console.warn('[AuthContext] Erro ao buscar cliente por usuário:', error);

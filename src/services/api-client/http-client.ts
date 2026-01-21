@@ -8,6 +8,8 @@
  * - Dependency Inversion: Depende de abstrações (RequestConfig)
  */
 
+import { getSchemaFromHostname } from '@/utils/schema.utils';
+
 export interface RequestConfig extends RequestInit {
   params?: Record<string, any>;
   skipAuth?: boolean;
@@ -37,9 +39,17 @@ export class HttpClient {
   private requestInterceptors: RequestInterceptor[] = [];
   private responseInterceptors: ResponseInterceptor[] = [];
   private errorInterceptors: ErrorInterceptor[] = [];
+  private shouldAddSchemaHeader: boolean = false;
 
   constructor(baseURL: string) {
     this.baseURL = baseURL;
+  }
+
+  /**
+   * Define se deve adicionar o header X-Schema automaticamente
+   */
+  setShouldAddSchemaHeader(shouldAdd: boolean): void {
+    this.shouldAddSchemaHeader = shouldAdd;
   }
 
   /**
@@ -131,25 +141,46 @@ export class HttpClient {
 
       // Constrói URL com params
       const url = this.buildURL(endpoint, finalConfig.params);
-      console.log('[HttpClient] Making request to:', url);
 
       // Remove params do config pois já foram adicionados à URL
       const { params, ...fetchConfig } = finalConfig;
 
-      // Garante que o Content-Type seja application/json quando há body
-      const headers: HeadersInit = {
-        ...fetchConfig.headers,
-      };
+      // Converte headers para objeto simples para garantir compatibilidade
+      let headers: Record<string, string> = {};
+      
+      if (fetchConfig.headers) {
+        if (fetchConfig.headers instanceof Headers) {
+          fetchConfig.headers.forEach((value, key) => {
+            headers[key] = value;
+          });
+        } else if (Array.isArray(fetchConfig.headers)) {
+          fetchConfig.headers.forEach(([key, value]) => {
+            headers[key] = value;
+          });
+        } else {
+          headers = { ...(fetchConfig.headers as Record<string, string>) };
+        }
+      }
       
       // Se houver body e não houver Content-Type definido, define como application/json
       if (fetchConfig.body && !headers['Content-Type'] && !headers['content-type']) {
         headers['Content-Type'] = 'application/json';
       }
+      
+      // ADICIONA X-Schema diretamente se necessário (fallback caso o interceptor não funcione)
+      if (this.shouldAddSchemaHeader && !headers['X-Schema'] && !headers['x-schema']) {
+        try {
+          const schema = getSchemaFromHostname();
+          headers['X-Schema'] = schema;
+        } catch (error) {
+          console.warn('[HttpClient] Erro ao adicionar X-Schema diretamente:', error);
+        }
+      }
 
-      // Faz a requisição
+      // Faz a requisição - IMPORTANTE: passar headers como objeto simples
       const response = await fetch(url, {
         ...fetchConfig,
-        headers,
+        headers: headers, // Garante que os headers processados sejam usados
       });
 
       // Verifica se houve erro HTTP

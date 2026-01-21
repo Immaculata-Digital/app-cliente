@@ -6,7 +6,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { configuracoesGlobaisService } from '@/services/api-admin/configuracoes-globais.service';
-import { clientesConcordiaService } from '@/services/api-admin/clientes-concordia.service';
 import { getSchemaFromHostname } from '@/utils/schema.utils';
 import type { ConfiguracoesGlobais } from '@/types/configuracoes-globais';
 
@@ -121,11 +120,13 @@ function updateFavicon(logoBase64?: string): void {
 }
 
 /**
- * Atualiza o título da página com o nome do cliente
+ * Atualiza o título da página com o schema (capitalizado)
  */
-function updatePageTitle(nomeCliente?: string | null): void {
-  if (nomeCliente) {
-    document.title = nomeCliente;
+function updatePageTitle(schema: string): void {
+  if (schema) {
+    // Capitaliza a primeira letra do schema para usar como título
+    const schemaCapitalized = schema.charAt(0).toUpperCase() + schema.slice(1);
+    document.title = schemaCapitalized;
   } else {
     // Fallback para título padrão
     document.title = 'App Clientes';
@@ -310,9 +311,8 @@ export function ConfiguracoesGlobaisProvider({ children }: { children: ReactNode
         applyTheme(DEFAULT_CONFIG);
       }
 
-      // Busca o nome do cliente pelo schema para atualizar o título
-      const nomeCliente = await clientesConcordiaService.getNomeBySchema(schema);
-      updatePageTitle(nomeCliente);
+      // Atualiza o título da página com o schema (capitalizado)
+      updatePageTitle(schema);
     } catch (error) {
       console.error('[ConfiguracoesGlobais] Erro ao carregar configurações globais:', error);
       // Em caso de erro, aplica configuração padrão

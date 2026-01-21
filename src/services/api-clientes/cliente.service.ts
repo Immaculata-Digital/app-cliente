@@ -7,6 +7,7 @@ export interface ClienteRegistroData {
   whatsapp: string;
   cep: string;
   sexo: 'M' | 'F' | 'O';
+  data_nascimento: string;
   aceite_termos: boolean;
   senha: string;
 }
@@ -30,6 +31,7 @@ export interface ClienteData {
   whatsapp: string;
   cep: string;
   sexo: 'M' | 'F';
+  data_nascimento?: string | null;
   saldo: number;
   aceite_termos: boolean;
   dt_cadastro: string;
@@ -46,15 +48,21 @@ class ClienteService {
    * Busca dados do cliente por ID
    */
   async getCliente(schema: string, id: number): Promise<ClienteData> {
-    return await apiClientClientes.get<ClienteData>(
-      `/clientes/${schema}/${id}`
-    );
+    try {
+      const response = await apiClientClientes.get<ClienteData>(
+        `/clientes/${schema}/${id}`
+      );
+      return response;
+    } catch (error: any) {
+      console.error('[ClienteService] Erro ao buscar cliente:', error);
+      throw error;
+    }
   }
 
   /**
-   * Busca cliente por id_usuario
+   * Busca cliente por id_usuario (UUID)
    */
-  async getClienteByUsuario(schema: string, id_usuario: number): Promise<ClienteData | null> {
+  async getClienteByUsuario(schema: string, id_usuario: string): Promise<ClienteData | null> {
     try {
       const response = await apiClientClientes.get<ClienteData>(
         `/clientes/${schema}/usuario/${id_usuario}`
@@ -89,6 +97,7 @@ class ClienteService {
         whatsapp: whatsappSemFormatacao,
         cep: cepSemFormatacao,
         sexo: data.sexo,
+        data_nascimento: data.data_nascimento,
         aceite_termos: data.aceite_termos,
         senha: data.senha,
       },
