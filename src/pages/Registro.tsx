@@ -107,11 +107,11 @@ const Registro = () => {
       setLojas(response.itens);
       if (response.itens.length === 0) {
         toast({
-          title: "Erro",
-          description: "Nenhuma loja disponível",
-          variant: "destructive",
+          title: "Atenção",
+          description: "Nenhuma loja disponível no momento. Por favor, entre em contato com o suporte.",
+          variant: "default",
         });
-        navigate("/login");
+        // Não redireciona - mantém na página de registro
         return;
       }
       // Mostra mensagem informativa ao usuário se solicitado
@@ -126,11 +126,11 @@ const Registro = () => {
       console.error("[Registro] Erro ao carregar lojas:", error);
       const errorMessage = error?.message || error?.response?.data?.message || "Não foi possível carregar as lojas";
       toast({
-        title: "Erro",
-        description: errorMessage,
-        variant: "destructive",
+        title: "Atenção",
+        description: `${errorMessage}. Por favor, tente novamente ou entre em contato com o suporte.`,
+        variant: "default",
       });
-      navigate("/login");
+      // Não redireciona - mantém na página de registro para o usuário tentar novamente
     } finally {
       setLoadingLojas(false);
     }
@@ -140,12 +140,9 @@ const Registro = () => {
     const validarIdLoja = async () => {
       const idLoja = searchParams.get("id_loja");
       if (!idLoja) {
-        toast({
-          title: "Erro",
-          description: "ID da loja não encontrado",
-          variant: "destructive",
-        });
-        navigate("/login");
+        // Se não tem id_loja, carrega lista de lojas para seleção
+        console.log('[Registro] id_loja não fornecido, carregando lista de lojas...');
+        await carregarLojasParaSelecao(false);
         return;
       }
 
@@ -161,12 +158,14 @@ const Registro = () => {
 
       // Se id_loja não for 0, verifica se é um número válido
       if (isNaN(idLojaNumero) || idLojaNumero < 1) {
+        // Se ID inválido, carrega lista de lojas para seleção
+        console.log('[Registro] id_loja inválido, carregando lista de lojas...');
         toast({
           title: "ID inválido",
-          description: "O ID da loja informado é inválido",
-          variant: "destructive",
+          description: "O ID da loja informado é inválido. Por favor, selecione uma loja abaixo.",
+          variant: "default",
         });
-        navigate("/login");
+        await carregarLojasParaSelecao(false);
         return;
       }
 
@@ -183,7 +182,13 @@ const Registro = () => {
       } catch (error: any) {
         // Se der erro ao validar, tenta carregar lista de lojas como fallback
         console.error("[Registro] Erro ao validar id_loja:", error);
-        await carregarLojasParaSelecao(true);
+        // Verifica se é erro 404 (loja não encontrada)
+        if (error?.status === 404 || error?.response?.status === 404) {
+          await carregarLojasParaSelecao(true);
+        } else {
+          // Para outros erros, também tenta carregar lojas como fallback
+          await carregarLojasParaSelecao(true);
+        }
         return;
       }
     };
