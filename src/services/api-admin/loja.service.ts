@@ -8,10 +8,19 @@ import { apiClientAdmin } from '../api-client/http-client.factory';
 
 export interface Loja {
   id_loja: number;
-  nome: string;
+  nome_loja: string;
+  numero_identificador?: string;
+  nome_responsavel?: string;
+  telefone_responsavel?: string;
   cnpj: string | null;
-  ativo: boolean;
-  schema: string;
+  endereco_completo?: string;
+  ativo?: boolean;
+  schema?: string;
+}
+
+export interface ListLojasResponse {
+  total: number;
+  itens: Loja[];
 }
 
 /**
@@ -48,6 +57,28 @@ class LojaService {
     } catch (error) {
       console.error('[LojaService] Erro ao verificar se loja existe:', error);
       return false;
+    }
+  }
+
+  /**
+   * Lista todas as lojas (público - sem autenticação)
+   */
+  async listLojas(schema: string, filters?: { limit?: number; offset?: number; search?: string }): Promise<ListLojasResponse> {
+    try {
+      const params = new URLSearchParams();
+      if (filters?.limit) params.append('limit', filters.limit.toString());
+      if (filters?.offset) params.append('offset', filters.offset.toString());
+      if (filters?.search) params.append('search', filters.search);
+      const query = params.toString();
+      
+      const response = await apiClientAdmin.get<ListLojasResponse>(
+        `/${schema}/lojas${query ? `?${query}` : ''}`,
+        { skipAuth: true } // Requisição pública, não precisa de token
+      );
+      return response;
+    } catch (error: any) {
+      console.error('[LojaService] Erro ao listar lojas:', error);
+      throw error;
     }
   }
 }

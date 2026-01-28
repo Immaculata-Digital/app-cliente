@@ -18,12 +18,16 @@ import { RecompensasCarousel } from "@/components/RecompensasCarousel";
 import type { PontosRecompensa } from "@/types/cliente-pontos-recompensas";
 import { useConfiguracoesGlobais } from "@/contexts/ConfiguracoesGlobaisContext";
 import { getSchemaFromHostname } from "@/utils/schema.utils";
+import type { Loja } from "@/services/api-admin/loja.service";
 
 const Registro = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [itensRecompensa, setItensRecompensa] = useState<PontosRecompensa[]>([]);
+  const [lojas, setLojas] = useState<Loja[]>([]);
+  const [lojaSelecionada, setLojaSelecionada] = useState<string>("");
+  const [loadingLojas, setLoadingLojas] = useState(false);
   const { configuracoes } = useConfiguracoesGlobais();
 
   const {
@@ -53,7 +57,12 @@ const Registro = () => {
 
   // Verifica se todos os campos obrigatórios estão preenchidos e válidos
   const isFormValid = useMemo(() => {
+    const idLojaParam = searchParams.get("id_loja");
+    const idLojaNumero = parseInt(idLojaParam || "0", 10);
+    const lojaValida = idLojaNumero === 0 ? !!lojaSelecionada : true;
+    
     return !!(
+      lojaValida &&
       nomeCompleto &&
       nomeCompleto.length >= 3 &&
       email &&
@@ -76,7 +85,7 @@ const Registro = () => {
       aceiteTermos === true &&
       Object.keys(errors).length === 0
     );
-  }, [nomeCompleto, email, whatsapp, cep, sexo, dataNascimento, senha, confirmarSenha, aceiteTermos, errors]);
+  }, [nomeCompleto, email, whatsapp, cep, sexo, dataNascimento, senha, confirmarSenha, aceiteTermos, errors, lojaSelecionada, searchParams]);
 
   const abrirPoliticaPrivacidade = () => {
     window.open("/pdfs/Politica de privacidade.pdf", "_blank");
@@ -99,20 +108,58 @@ const Registro = () => {
         return;
       }
 
-      // Verifica se o id_loja existe
-      try {
-        const idLojaNumero = parseInt(idLoja, 10);
-        if (isNaN(idLojaNumero)) {
+      const schema = getSchemaFromHostname();
+      const idLojaNumero = parseInt(idLoja, 10);
+      
+      // Se id_loja for 0, carregar lista de lojas (não valida se existe)
+      if (idLojaNumero === 0) {
+        console.log('[Registro] id_loja = 0, carregando lista de lojas...');
+        setLoadingLojas(true);
+        try {
+          const response = await lojaService.listLojas(schema, { limit: 200, offset: 0 });
+          console.log('[Registro] Lojas carregadas:', response.itens.length);
+          setLojas(response.itens);
+          if (response.itens.length === 0) {
+            toast({
+              title: "Erro",
+              description: "Nenhuma loja disponível",
+              variant: "destructive",
+            });
+            navigate("/login");
+            return;
+          }
+          // Se chegou aqui, tem lojas disponíveis, então pode continuar
+          // Não precisa fazer return aqui, deixa o componente renderizar normalmente
+        } catch (error: any) {
+          console.error("[Registro] Erro ao carregar lojas:", error);
+          const errorMessage = error?.message || error?.response?.data?.message || "Não foi possível carregar as lojas";
           toast({
-            title: "ID inválido",
-            description: "O ID da loja informado é inválido",
+            title: "Erro",
+            description: errorMessage,
             variant: "destructive",
           });
           navigate("/login");
           return;
+        } finally {
+          setLoadingLojas(false);
         }
+        // Return aqui para não validar se a loja existe (pois id_loja = 0)
+        return;
+      }
 
-        const schema = getSchemaFromHostname();
+      // Se id_loja não for 0, verifica se é um número válido
+      if (isNaN(idLojaNumero) || idLojaNumero < 1) {
+        toast({
+          title: "ID inválido",
+          description: "O ID da loja informado é inválido",
+          variant: "destructive",
+        });
+        navigate("/login");
+        return;
+      }
+
+      // Valida se a loja existe (apenas se id_loja > 0)
+      try {
         const lojaExiste = await lojaService.lojaExiste(schema, idLojaNumero);
         if (!lojaExiste) {
           toast({
@@ -131,6 +178,7 @@ const Registro = () => {
           variant: "destructive",
         });
         navigate("/login");
+        return;
       }
     };
 
@@ -169,9 +217,27 @@ const Registro = () => {
 
   const onSubmit = async (data: RegistroFormData) => {
     try {
-      const idLoja = searchParams.get("id_loja");
-      if (!idLoja) {
+      const idLojaParam = searchParams.get("id_loja");
+      if (!idLojaParam) {
         throw new Error("ID da loja não encontrado");
+      }
+
+      const idLojaNumero = parseInt(idLojaParam, 10);
+      let idLojaFinal: number;
+
+      // Se id_loja for 0, usar o id_loja selecionado na combo
+      if (idLojaNumero === 0) {
+        if (!lojaSelecionada) {
+          toast({
+            title: "Erro",
+            description: "Por favor, selecione uma loja",
+            variant: "destructive",
+          });
+          return;
+        }
+        idLojaFinal = parseInt(lojaSelecionada, 10);
+      } else {
+        idLojaFinal = idLojaNumero;
       }
 
       const { confirmar_senha, ...registroData } = data;
@@ -186,7 +252,7 @@ const Registro = () => {
         data_nascimento: registroData.data_nascimento,
         aceite_termos: registroData.aceite_termos,
         senha: registroData.senha,
-        id_loja: parseInt(idLoja, 10),
+        id_loja: idLojaFinal,
       });
 
       toast({
@@ -255,6 +321,32 @@ const Registro = () => {
               role="form"
               aria-label="Formulário de Cadastro"
             >
+              {/* Combo de seleção de loja quando id_loja = 0 */}
+              {parseInt(searchParams.get("id_loja") || "0", 10) === 0 && (
+                <div className="space-y-2">
+                  <Label htmlFor="loja">Loja *</Label>
+                  <Select
+                    value={lojaSelecionada}
+                    onValueChange={setLojaSelecionada}
+                    disabled={loadingLojas}
+                  >
+                    <SelectTrigger className={!lojaSelecionada ? "border-destructive !bg-[#ffffff]" : "!bg-[#ffffff]"}>
+                      <SelectValue placeholder={loadingLojas ? "Carregando lojas..." : "Selecione uma loja"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {lojas.map((loja) => (
+                        <SelectItem key={loja.id_loja} value={loja.id_loja.toString()}>
+                          {loja.nome_loja}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {!lojaSelecionada && (
+                    <p className="text-sm text-destructive">Por favor, selecione uma loja</p>
+                  )}
+                </div>
+              )}
+
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <Input
                   label="Nome Completo"
