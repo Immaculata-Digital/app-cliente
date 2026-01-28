@@ -59,7 +59,9 @@ const Registro = () => {
   const isFormValid = useMemo(() => {
     const idLojaParam = searchParams.get("id_loja");
     const idLojaNumero = parseInt(idLojaParam || "0", 10);
-    const lojaValida = idLojaNumero === 0 ? !!lojaSelecionada : true;
+    // Se id_loja = 0 OU se tem lojas carregadas (significa que precisa selecionar), valida se loja foi selecionada
+    const precisaSelecionarLoja = idLojaNumero === 0 || lojas.length > 0;
+    const lojaValida = precisaSelecionarLoja ? !!lojaSelecionada : true;
     
     return !!(
       lojaValida &&
@@ -85,7 +87,7 @@ const Registro = () => {
       aceiteTermos === true &&
       Object.keys(errors).length === 0
     );
-  }, [nomeCompleto, email, whatsapp, cep, sexo, dataNascimento, senha, confirmarSenha, aceiteTermos, errors, lojaSelecionada, searchParams]);
+  }, [nomeCompleto, email, whatsapp, cep, sexo, dataNascimento, senha, confirmarSenha, aceiteTermos, errors, lojaSelecionada, lojas.length, searchParams]);
 
   const abrirPoliticaPrivacidade = () => {
     window.open("/pdfs/Politica de privacidade.pdf", "_blank");
@@ -93,6 +95,45 @@ const Registro = () => {
 
   const abrirTermosUso = () => {
     window.open("/pdfs/TERMOS DE USO – CLUBE DE FIDELIDADE.pdf", "_blank");
+  };
+
+  // Função auxiliar para carregar lojas e mostrar combo
+  const carregarLojasParaSelecao = async (mostrarMensagemLojaNaoEncontrada: boolean = false) => {
+    const schema = getSchemaFromHostname();
+    setLoadingLojas(true);
+    try {
+      const response = await lojaService.listLojas(schema, { limit: 200, offset: 0 });
+      console.log('[Registro] Lojas carregadas:', response.itens.length);
+      setLojas(response.itens);
+      if (response.itens.length === 0) {
+        toast({
+          title: "Erro",
+          description: "Nenhuma loja disponível",
+          variant: "destructive",
+        });
+        navigate("/login");
+        return;
+      }
+      // Mostra mensagem informativa ao usuário se solicitado
+      if (mostrarMensagemLojaNaoEncontrada) {
+        toast({
+          title: "Loja não encontrada",
+          description: "A loja informada não existe. Por favor, selecione uma loja abaixo.",
+          variant: "default",
+        });
+      }
+    } catch (error: any) {
+      console.error("[Registro] Erro ao carregar lojas:", error);
+      const errorMessage = error?.message || error?.response?.data?.message || "Não foi possível carregar as lojas";
+      toast({
+        title: "Erro",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      navigate("/login");
+    } finally {
+      setLoadingLojas(false);
+    }
   };
 
   useEffect(() => {
@@ -114,36 +155,7 @@ const Registro = () => {
       // Se id_loja for 0, carregar lista de lojas (não valida se existe)
       if (idLojaNumero === 0) {
         console.log('[Registro] id_loja = 0, carregando lista de lojas...');
-        setLoadingLojas(true);
-        try {
-          const response = await lojaService.listLojas(schema, { limit: 200, offset: 0 });
-          console.log('[Registro] Lojas carregadas:', response.itens.length);
-          setLojas(response.itens);
-          if (response.itens.length === 0) {
-            toast({
-              title: "Erro",
-              description: "Nenhuma loja disponível",
-              variant: "destructive",
-            });
-            navigate("/login");
-            return;
-          }
-          // Se chegou aqui, tem lojas disponíveis, então pode continuar
-          // Não precisa fazer return aqui, deixa o componente renderizar normalmente
-        } catch (error: any) {
-          console.error("[Registro] Erro ao carregar lojas:", error);
-          const errorMessage = error?.message || error?.response?.data?.message || "Não foi possível carregar as lojas";
-          toast({
-            title: "Erro",
-            description: errorMessage,
-            variant: "destructive",
-          });
-          navigate("/login");
-          return;
-        } finally {
-          setLoadingLojas(false);
-        }
-        // Return aqui para não validar se a loja existe (pois id_loja = 0)
+        await carregarLojasParaSelecao(false);
         return;
       }
 
@@ -162,22 +174,16 @@ const Registro = () => {
       try {
         const lojaExiste = await lojaService.lojaExiste(schema, idLojaNumero);
         if (!lojaExiste) {
-          toast({
-            title: "ID inválido",
-            description: "O ID da loja informado não existe",
-            variant: "destructive",
-          });
-          navigate("/login");
+          // Se a loja não existe (404), carrega lista de lojas para o usuário escolher
+          console.log('[Registro] Loja não existe, carregando lista de lojas...');
+          await carregarLojasParaSelecao(true);
           return;
         }
-      } catch (error) {
-        console.error("Erro ao validar id_loja:", error);
-        toast({
-          title: "Erro",
-          description: "Não foi possível validar o ID da loja",
-          variant: "destructive",
-        });
-        navigate("/login");
+        // Se a loja existe, continua normalmente (sem combo)
+      } catch (error: any) {
+        // Se der erro ao validar, tenta carregar lista de lojas como fallback
+        console.error("[Registro] Erro ao validar id_loja:", error);
+        await carregarLojasParaSelecao(true);
         return;
       }
     };
@@ -225,8 +231,8 @@ const Registro = () => {
       const idLojaNumero = parseInt(idLojaParam, 10);
       let idLojaFinal: number;
 
-      // Se id_loja for 0, usar o id_loja selecionado na combo
-      if (idLojaNumero === 0) {
+      // Se id_loja for 0 OU se tem lojas carregadas (significa que precisa selecionar), usar o id_loja selecionado na combo
+      if (idLojaNumero === 0 || lojas.length > 0) {
         if (!lojaSelecionada) {
           toast({
             title: "Erro",
@@ -321,8 +327,8 @@ const Registro = () => {
               role="form"
               aria-label="Formulário de Cadastro"
             >
-              {/* Combo de seleção de loja quando id_loja = 0 */}
-              {parseInt(searchParams.get("id_loja") || "0", 10) === 0 && (
+              {/* Combo de seleção de loja quando id_loja = 0 ou quando a loja não existe */}
+              {(parseInt(searchParams.get("id_loja") || "0", 10) === 0 || lojas.length > 0) && (
                 <div className="space-y-2">
                   <Label htmlFor="loja">Loja *</Label>
                   <Select

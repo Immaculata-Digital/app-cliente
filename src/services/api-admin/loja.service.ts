@@ -49,14 +49,20 @@ class LojaService {
 
   /**
    * Verifica se uma loja existe
+   * @throws {Error} Se o erro não for 404 (loja não encontrada)
    */
   async lojaExiste(schema: string, id: number): Promise<boolean> {
     try {
       const loja = await this.getLojaById(schema, id);
       return loja !== null;
-    } catch (error) {
+    } catch (error: any) {
+      // Se for 404, retorna false (loja não existe)
+      if (error?.status === 404 || error?.response?.status === 404) {
+        return false;
+      }
+      // Se for outro erro, propaga para ser tratado
       console.error('[LojaService] Erro ao verificar se loja existe:', error);
-      return false;
+      throw error;
     }
   }
 
