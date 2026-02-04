@@ -24,7 +24,7 @@ export const AppRoutes = () => {
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/esqueci-senha" element={<ForgotPassword />} />
-        <Route path="/redefinir-senha" element={<ResetPassword />} />
+        <Route path="/account/set-password" element={<ResetPassword />} />
         <Route path="/registro" element={<Registro />} />
 
         {/* Main route - Client Area */}
