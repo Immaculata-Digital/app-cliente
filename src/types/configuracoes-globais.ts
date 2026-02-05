@@ -14,6 +14,8 @@ export interface ConfiguracoesGlobais {
   cor_texto_botao?: string;
   fonte_titulos?: string;
   fonte_textos?: string;
+  arquivo_politica_privacidade?: string;
+  arquivo_termos_uso?: string;
   dt_cadastro?: string;
   usu_cadastro?: number;
   dt_altera?: string;
@@ -30,4 +32,6 @@ export interface UpdateConfiguracoesGlobaisRequest {
   cor_texto_botao?: string;
   fonte_titulos?: string;
   fonte_textos?: string;
+  arquivo_politica_privacidade?: string;
+  arquivo_termos_uso?: string;
 }
