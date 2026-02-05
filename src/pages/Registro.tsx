@@ -385,7 +385,7 @@ const Registro = () => {
                     <SelectContent>
                       {lojas.map((loja) => (
                         <SelectItem key={loja.id_loja} value={loja.id_loja.toString()}>
-                          {loja.nome_loja}
+                          {loja.nome_loja_publico || loja.nome_loja}
                         </SelectItem>
                       ))}
                     </SelectContent>
