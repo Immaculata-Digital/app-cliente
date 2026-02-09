@@ -28,6 +28,7 @@ export interface ClientePontosMovimentacao {
   usu_cadastro: number;
   dt_altera?: string;
   usu_altera?: number;
+  codigo_resgate?: string;
 }
 
 /**

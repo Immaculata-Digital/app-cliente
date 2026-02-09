@@ -66,7 +66,7 @@ class PontosMovimentacaoService {
       }>(
         `/clientes/${schema}/${id_cliente}/codigos-resgate/item/${id_item_recompensa}`
       );
-      
+
       // Transformar resposta para formato ResgateResponse
       return {
         movimentacao: {
@@ -134,7 +134,9 @@ class PontosMovimentacaoService {
     filters: ExtratoFilters = {}
   ): Promise<ExtratoResponse> {
     try {
+      console.log('getExtrato called with:', { schema, id_cliente, filters });
       const params: Record<string, any> = {
+
         page: filters.page || 1,
         limit: filters.limit || 10,
         order: filters.order || 'desc',
@@ -145,10 +147,25 @@ class PontosMovimentacaoService {
       if (filters.tipo) params.tipo = filters.tipo;
       if (filters.origem) params.origem = filters.origem;
 
-      const response = await apiClientClientes.get<ExtratoResponse>(
+      const response = await apiClientClientes.get<any>(
         `/clientes/${schema}/${id_cliente}/pontos-movimentacoes`,
         { params }
       );
+
+      // Mapear resposta da API (data/pagination) para o formato esperado (movimentacoes/meta)
+      if (response && response.data && Array.isArray(response.data)) {
+        return {
+          movimentacoes: response.data,
+          saldo_atual: 0, // A API não retorna saldo atual neste endpoint, mas o type exige
+          meta: {
+            total: response.pagination?.total || 0,
+            page: response.pagination?.page || 1,
+            limit: response.pagination?.limit || 10,
+            totalPages: response.pagination?.totalPages || 1,
+          }
+        };
+      }
+
       return response;
     } catch (error: any) {
       console.warn('⚠️ API indisponível, usando mock');

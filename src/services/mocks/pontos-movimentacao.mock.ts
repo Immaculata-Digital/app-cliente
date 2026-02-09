@@ -153,39 +153,43 @@ class PontosMovimentacaoMock {
   ): Promise<ExtratoResponse> {
     await delay(300);
 
+    // Ensure filters is object if null was passed
+    const safeFilters = filters || {};
+
     let movimentacoesFiltradas = [...this.movimentacoes].filter(
       (m) => m.id_cliente === id_cliente
     );
 
     // Filtrar por tipo
-    if (filters.tipo) {
+    if (safeFilters.tipo) {
+
       movimentacoesFiltradas = movimentacoesFiltradas.filter(
-        (m) => m.tipo === filters.tipo
+        (m) => m.tipo === safeFilters.tipo
       );
     }
 
     // Filtrar por origem
-    if (filters.origem) {
+    if (safeFilters.origem) {
       movimentacoesFiltradas = movimentacoesFiltradas.filter(
-        (m) => m.origem === filters.origem
+        (m) => m.origem === safeFilters.origem
       );
     }
 
     // Filtrar por data
-    if (filters.dt_ini) {
+    if (safeFilters.dt_ini) {
       movimentacoesFiltradas = movimentacoesFiltradas.filter(
-        (m) => m.dt_movimentacao >= filters.dt_ini!
+        (m) => m.dt_movimentacao >= safeFilters.dt_ini!
       );
     }
 
-    if (filters.dt_fim) {
+    if (safeFilters.dt_fim) {
       movimentacoesFiltradas = movimentacoesFiltradas.filter(
-        (m) => m.dt_movimentacao <= filters.dt_fim!
+        (m) => m.dt_movimentacao <= safeFilters.dt_fim!
       );
     }
 
     // Ordenar
-    const order = filters.order || "desc";
+    const order = safeFilters.order || "desc";
     movimentacoesFiltradas.sort((a, b) => {
       const dateA = new Date(a.dt_movimentacao).getTime();
       const dateB = new Date(b.dt_movimentacao).getTime();
@@ -193,8 +197,8 @@ class PontosMovimentacaoMock {
     });
 
     // Paginação
-    const page = filters.page || 1;
-    const limit = filters.limit || 10;
+    const page = safeFilters.page || 1;
+    const limit = safeFilters.limit || 10;
     const total = movimentacoesFiltradas.length;
     const totalPages = Math.ceil(total / limit);
     const start = (page - 1) * limit;
@@ -225,6 +229,9 @@ class PontosMovimentacaoMock {
   ): Promise<ExtratoResponse> {
     await delay(300);
 
+    // Ensure filters is object if null was passed
+    const safeFilters = filters || {};
+
     const searchTerm = q.toLowerCase();
     let movimentacoesFiltradas = [...this.movimentacoes]
       .filter((m) => m.id_cliente === id_cliente)
@@ -237,7 +244,7 @@ class PontosMovimentacaoMock {
       );
 
     // Ordenar
-    const order = filters.order || "desc";
+    const order = safeFilters.order || "desc";
     movimentacoesFiltradas.sort((a, b) => {
       const dateA = new Date(a.dt_movimentacao).getTime();
       const dateB = new Date(b.dt_movimentacao).getTime();
@@ -245,8 +252,8 @@ class PontosMovimentacaoMock {
     });
 
     // Paginação
-    const page = filters.page || 1;
-    const limit = filters.limit || 10;
+    const page = safeFilters.page || 1;
+    const limit = safeFilters.limit || 10;
     const total = movimentacoesFiltradas.length;
     const totalPages = Math.ceil(total / limit);
     const start = (page - 1) * limit;

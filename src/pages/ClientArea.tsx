@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { Gift, Plus, Copy, X, LogOut, QrCode } from "lucide-react";
+import { Gift, Plus, Copy, X, LogOut, QrCode, ScrollText } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { HistoryModal } from "@/components/client-area/HistoryModal";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +27,7 @@ const ClientArea = () => {
   const { user, logout, isLoading } = useAuth();
   const { configuracoes } = useConfiguracoesGlobais();
   const [modalAberto, setModalAberto] = useState<ModalType>(null);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [contextoModal, setContextoModal] = useState<ModalContext>("resgate");
   const [itemSelecionado, setItemSelecionado] = useState<PontosRecompensa | null>(null);
   const [resgatePendente, setResgatePendente] = useState(false);
@@ -446,6 +448,14 @@ const ClientArea = () => {
               })()}
             </p>
             <p className="text-xs mt-1" style={{ color: 'hsl(var(--card-foreground))' }}>pontos disponíveis</p>
+            <Button
+              variant="link"
+              className="px-0 h-auto text-xs mt-2 text-muted-foreground hover:text-primary"
+              onClick={() => setShowHistoryModal(true)}
+            >
+              <ScrollText className="h-3 w-3 mr-1" />
+              Ver extrato
+            </Button>
           </Card>
 
           {/* Card Código */}
@@ -773,6 +783,11 @@ const ClientArea = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <HistoryModal
+        isOpen={showHistoryModal}
+        onOpenChange={setShowHistoryModal}
+      />
     </div>
   );
 };
