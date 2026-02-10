@@ -124,28 +124,38 @@ export function HistoryModal({ isOpen, onOpenChange }: HistoryModalProps) {
                           </div>
                         </div>
                         <span
-                          className={`font-bold font-mono text-base ${
-                            mov.tipo === "CREDITO"
+                          className={`font-bold font-mono text-base ${mov.tipo === "CREDITO"
                               ? "text-emerald-600"
                               : "text-rose-600"
-                          }`}
+                            }`}
                         >
                           {mov.tipo === "CREDITO" ? "+" : "-"}
                           {mov.pontos}
                         </span>
                       </div>
-                      
+
                       {mov.observacao && (
                         <div className="bg-muted/50 p-2 rounded text-xs text-muted-foreground mt-1">
                           {mov.observacao}
                         </div>
                       )}
-                      
+
                       {mov.codigo_resgate && (
-                          <div className="mt-2 flex items-center justify-between bg-primary/5 p-2 rounded border border-primary/10">
-                              <span className="text-xs font-medium text-primary">Código:</span>
-                              <span className="text-xs font-mono font-bold">{mov.codigo_resgate}</span>
+                        <div className="mt-2 flex items-center justify-between bg-primary/5 p-2 rounded border border-primary/10">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium text-primary">Código:</span>
+                            <span className="text-xs font-mono font-bold">{mov.codigo_resgate}</span>
                           </div>
+                          {mov.resgate_utilizado ? (
+                            <span className="text-[10px] font-medium bg-green-100 text-green-700 px-2 py-0.5 rounded-full border border-green-200">
+                              Resgatado
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-medium bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full border border-yellow-200">
+                              Pendente
+                            </span>
+                          )}
+                        </div>
                       )}
                     </div>
                   ))}
@@ -155,8 +165,8 @@ export function HistoryModal({ isOpen, onOpenChange }: HistoryModalProps) {
               <div className="flex flex-col items-center justify-center py-16 px-4 text-center h-64">
                 <ShoppingBag className="h-12 w-12 mb-4 text-muted-foreground/30" />
                 <p className="text-muted-foreground font-medium">
-                  {activeTab === "resgates" 
-                    ? "Nenhum resgate encontrado." 
+                  {activeTab === "resgates"
+                    ? "Nenhum resgate encontrado."
                     : "Nenhuma movimentação registrada."}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1 max-w-[200px]">
@@ -168,11 +178,11 @@ export function HistoryModal({ isOpen, onOpenChange }: HistoryModalProps) {
             )}
           </div>
         </Tabs>
-        
+
         <div className="p-4 border-t bg-background">
-             <Button variant="outline" className="w-full" onClick={() => onOpenChange(false)}>
-                Fechar
-             </Button>
+          <Button variant="outline" className="w-full" onClick={() => onOpenChange(false)}>
+            Fechar
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

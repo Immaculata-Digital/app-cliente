@@ -29,6 +29,7 @@ export interface ClientePontosMovimentacao {
   dt_altera?: string;
   usu_altera?: number;
   codigo_resgate?: string;
+  resgate_utilizado?: boolean;
 }
 
 /**
