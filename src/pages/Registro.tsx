@@ -62,7 +62,7 @@ const Registro = () => {
     // Se id_loja = 0 OU se tem lojas carregadas (significa que precisa selecionar), valida se loja foi selecionada
     const precisaSelecionarLoja = idLojaNumero === 0 || lojas.length > 0;
     const lojaValida = precisaSelecionarLoja ? !!lojaSelecionada : true;
-    
+
     return !!(
       lojaValida &&
       nomeCompleto &&
@@ -89,12 +89,50 @@ const Registro = () => {
     );
   }, [nomeCompleto, email, whatsapp, cep, sexo, dataNascimento, senha, confirmarSenha, aceiteTermos, errors, lojaSelecionada, lojas.length, searchParams]);
 
+  const downloadPdfFromBase64 = (base64: string, fileName: string) => {
+    try {
+      // Verifica se o base64 tem cabeçalho de data URL (ex: data:application/pdf;base64,...)
+      const base64Clean = base64.includes(',') ? base64.split(',')[1] : base64;
+
+      const byteCharacters = atob(base64Clean);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("Erro ao fazer download do PDF", e);
+      toast({
+        title: "Erro",
+        description: "Não foi possível baixar o PDF.",
+        variant: "destructive"
+      })
+    }
+  };
+
   const abrirPoliticaPrivacidade = () => {
-    window.open("/pdfs/Politica de privacidade.pdf", "_blank");
+    if (configuracoes?.arquivo_politica_privacidade) {
+      downloadPdfFromBase64(configuracoes.arquivo_politica_privacidade, "Politica_Privacidade.pdf");
+    } else {
+      window.open("/pdfs/Politica de privacidade.pdf", "_blank");
+    }
   };
 
   const abrirTermosUso = () => {
-    window.open("/pdfs/TERMOS DE USO – CLUBE DE FIDELIDADE.pdf", "_blank");
+    if (configuracoes?.arquivo_termos_uso) {
+      downloadPdfFromBase64(configuracoes.arquivo_termos_uso, "Termos_de_Uso.pdf");
+    } else {
+      window.open("/pdfs/TERMOS DE USO – CLUBE DE FIDELIDADE.pdf", "_blank");
+    }
   };
 
   // Função auxiliar para carregar lojas e mostrar combo
@@ -148,7 +186,7 @@ const Registro = () => {
 
       const schema = getSchemaFromHostname();
       const idLojaNumero = parseInt(idLoja, 10);
-      
+
       // Se id_loja for 0, carregar lista de lojas (não valida se existe)
       if (idLojaNumero === 0) {
         console.log('[Registro] id_loja = 0, carregando lista de lojas...');
@@ -275,7 +313,7 @@ const Registro = () => {
     } catch (error: any) {
       const errorData = error.response?.data || {};
       let errorMessage = "Ocorreu um erro ao realizar o cadastro";
-      
+
       // Prioridade: error > message > details
       if (errorData.error) {
         errorMessage = errorData.error;
@@ -347,7 +385,7 @@ const Registro = () => {
                     <SelectContent>
                       {lojas.map((loja) => (
                         <SelectItem key={loja.id_loja} value={loja.id_loja.toString()}>
-                          {loja.nome_loja}
+                          {loja.nome_loja_publico || loja.nome_loja}
                         </SelectItem>
                       ))}
                     </SelectContent>

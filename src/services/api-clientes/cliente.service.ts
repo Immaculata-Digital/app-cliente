@@ -84,10 +84,10 @@ class ClienteService {
   async registrar(schema: string, data: ClienteRegistroData): Promise<ClienteRegistroResponse> {
     // Remove formatação do CEP (remove hífen) - API espera apenas números
     const cepSemFormatacao = data.cep.replace(/\D/g, '');
-    
+
     // Remove formatação do WhatsApp (remove caracteres não numéricos, exceto o +55 inicial)
     const whatsappSemFormatacao = data.whatsapp.replace(/[^\d+]/g, '');
-    
+
     return await apiClientClientes.post<ClienteRegistroResponse>(
       `/clientes/publico/${schema}`,
       {
@@ -101,8 +101,21 @@ class ClienteService {
         aceite_termos: data.aceite_termos,
         senha: data.senha,
       },
-      { skipAuth: true }
     );
+  }
+
+  /**
+   * Remove a conta do cliente permanentemente
+   */
+  async delete(schema: string, id: number): Promise<void> {
+    try {
+      await apiClientClientes.delete(
+        `/clientes/${schema}/${id}`
+      );
+    } catch (error: any) {
+      console.error('[ClienteService] Erro ao excluir cliente:', error);
+      throw error;
+    }
   }
 }
 

@@ -9,6 +9,7 @@ import { apiClientAdmin } from '../api-client/http-client.factory';
 export interface Loja {
   id_loja: number;
   nome_loja: string;
+  nome_loja_publico?: string;
   numero_identificador?: string;
   nome_responsavel?: string;
   telefone_responsavel?: string;
@@ -76,7 +77,7 @@ class LojaService {
       if (filters?.offset) params.append('offset', filters.offset.toString());
       if (filters?.search) params.append('search', filters.search);
       const query = params.toString();
-      
+
       const response = await apiClientAdmin.get<ListLojasResponse>(
         `/${schema}/lojas${query ? `?${query}` : ''}`,
         { skipAuth: true } // Requisição pública, não precisa de token
