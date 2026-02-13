@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ds/Input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DatePickerWithYear } from "@/components/ui/date-picker-with-year";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { RecompensasCarousel } from "@/components/RecompensasCarousel";
@@ -36,6 +37,7 @@ const Registro = () => {
     formState: { errors, isSubmitting, submitCount },
     setValue,
     watch,
+    control,
   } = useForm<RegistroFormData>({
     resolver: zodResolver(registroSchema),
     mode: "onChange",
@@ -421,14 +423,30 @@ const Registro = () => {
                   {errors.sexo && <p className="text-sm text-destructive">{errors.sexo.message}</p>}
                 </div>
 
-                <Input
-                  label="Data de Nascimento"
-                  type="date"
-                  {...register("data_nascimento")}
-                  error={errors.data_nascimento?.message}
-                  placeholder="YYYY-MM-DD"
-                  className="!bg-[#ffffff]"
-                />
+                <div className="space-y-1">
+                  <Controller
+                    name="data_nascimento"
+                    control={control}
+                    render={({ field }) => (
+                      <DatePickerWithYear
+                        label="Data de Nascimento"
+                        date={field.value ? new Date(field.value) : undefined}
+                        setDate={(date) => {
+                          if (date) {
+                            // Ajustando o fuso horário para garantir que a data seja salva corretamente (evitando o dia anterior)
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            field.onChange(`${year}-${month}-${day}`);
+                          } else {
+                            field.onChange("");
+                          }
+                        }}
+                        error={errors.data_nascimento?.message}
+                      />
+                    )}
+                  />
+                </div>
 
                 <div className="space-y-2">
                   <Label>Senha</Label>
