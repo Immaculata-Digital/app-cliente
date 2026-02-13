@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ds/Input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DatePickerWithYear } from "@/components/ui/date-picker-with-year";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { RecompensasCarousel } from "@/components/RecompensasCarousel";
@@ -33,9 +34,10 @@ const Registro = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting, isValid },
+    formState: { errors, isSubmitting, submitCount },
     setValue,
     watch,
+    control,
   } = useForm<RegistroFormData>({
     resolver: zodResolver(registroSchema),
     mode: "onChange",
@@ -54,40 +56,6 @@ const Registro = () => {
   const dataNascimento = watch("data_nascimento");
   const senha = watch("senha");
   const confirmarSenha = watch("confirmar_senha");
-
-  // Verifica se todos os campos obrigatórios estão preenchidos e válidos
-  const isFormValid = useMemo(() => {
-    const idLojaParam = searchParams.get("id_loja");
-    const idLojaNumero = parseInt(idLojaParam || "0", 10);
-    // Se id_loja = 0 OU se tem lojas carregadas (significa que precisa selecionar), valida se loja foi selecionada
-    const precisaSelecionarLoja = idLojaNumero === 0 || lojas.length > 0;
-    const lojaValida = precisaSelecionarLoja ? !!lojaSelecionada : true;
-
-    return !!(
-      lojaValida &&
-      nomeCompleto &&
-      nomeCompleto.length >= 3 &&
-      email &&
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
-      whatsapp &&
-      /^\+55\d{2}\d{8,9}$/.test(whatsapp) &&
-      cep &&
-      /^\d{5}-\d{3}$/.test(cep) &&
-      sexo &&
-      dataNascimento &&
-      /^\d{4}-\d{2}-\d{2}$/.test(dataNascimento) &&
-      senha &&
-      senha.length >= 6 &&
-      /[A-Z]/.test(senha) &&
-      /[a-z]/.test(senha) &&
-      /[0-9]/.test(senha) &&
-      /[!@#$%^&*(),.?":{}|<>]/.test(senha) &&
-      confirmarSenha &&
-      senha === confirmarSenha &&
-      aceiteTermos === true &&
-      Object.keys(errors).length === 0
-    );
-  }, [nomeCompleto, email, whatsapp, cep, sexo, dataNascimento, senha, confirmarSenha, aceiteTermos, errors, lojaSelecionada, lojas.length, searchParams]);
 
   const downloadPdfFromBase64 = (base64: string, fileName: string) => {
     try {
@@ -167,6 +135,7 @@ const Registro = () => {
         title: "Atenção",
         description: `${errorMessage}. Por favor, tente novamente ou entre em contato com o suporte.`,
         variant: "default",
+
       });
       // Não redireciona - mantém na página de registro para o usuário tentar novamente
     } finally {
@@ -379,7 +348,7 @@ const Registro = () => {
                     onValueChange={setLojaSelecionada}
                     disabled={loadingLojas}
                   >
-                    <SelectTrigger className={!lojaSelecionada ? "border-destructive !bg-[#ffffff]" : "!bg-[#ffffff]"}>
+                    <SelectTrigger className={(!lojaSelecionada && submitCount > 0) ? "border-destructive !bg-[#ffffff]" : "!bg-[#ffffff]"}>
                       <SelectValue placeholder={loadingLojas ? "Carregando lojas..." : "Selecione uma loja"} />
                     </SelectTrigger>
                     <SelectContent>
@@ -390,7 +359,7 @@ const Registro = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                  {!lojaSelecionada && (
+                  {(!lojaSelecionada && submitCount > 0) && (
                     <p className="text-sm text-destructive">Por favor, selecione uma loja</p>
                   )}
                 </div>
@@ -423,7 +392,7 @@ const Registro = () => {
                   className="!bg-[#ffffff]"
                   onChange={(e) => {
                     const formatted = formatWhatsApp(e.target.value);
-                    setValue("whatsapp", formatted);
+                    setValue("whatsapp", formatted, { shouldValidate: true });
                   }}
                 />
 
@@ -436,13 +405,13 @@ const Registro = () => {
                   className="!bg-[#ffffff]"
                   onChange={(e) => {
                     const formatted = formatCEP(e.target.value);
-                    setValue("cep", formatted);
+                    setValue("cep", formatted, { shouldValidate: true });
                   }}
                 />
 
                 <div className="space-y-2">
                   <Label>Sexo</Label>
-                  <Select value={sexo} onValueChange={(value) => setValue("sexo", value as "M" | "F")}>
+                  <Select value={sexo} onValueChange={(value) => setValue("sexo", value as "M" | "F", { shouldValidate: true })}>
                     <SelectTrigger className={errors.sexo ? "border-destructive !bg-[#ffffff]" : "!bg-[#ffffff]"}>
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
@@ -454,14 +423,30 @@ const Registro = () => {
                   {errors.sexo && <p className="text-sm text-destructive">{errors.sexo.message}</p>}
                 </div>
 
-                <Input
-                  label="Data de Nascimento"
-                  type="date"
-                  {...register("data_nascimento")}
-                  error={errors.data_nascimento?.message}
-                  placeholder="YYYY-MM-DD"
-                  className="!bg-[#ffffff]"
-                />
+                <div className="space-y-1">
+                  <Controller
+                    name="data_nascimento"
+                    control={control}
+                    render={({ field }) => (
+                      <DatePickerWithYear
+                        label="Data de Nascimento"
+                        date={field.value ? new Date(field.value) : undefined}
+                        setDate={(date) => {
+                          if (date) {
+                            // Ajustando o fuso horário para garantir que a data seja salva corretamente (evitando o dia anterior)
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            field.onChange(`${year}-${month}-${day}`);
+                          } else {
+                            field.onChange("");
+                          }
+                        }}
+                        error={errors.data_nascimento?.message}
+                      />
+                    )}
+                  />
+                </div>
 
                 <div className="space-y-2">
                   <Label>Senha</Label>
@@ -503,7 +488,7 @@ const Registro = () => {
               </div>
               {errors.aceite_termos && <p className="text-sm text-destructive">{errors.aceite_termos.message}</p>}
 
-              <Button type="submit" className="w-full text-base font-semibold" disabled={isSubmitting || !isFormValid}>
+              <Button type="submit" className="w-full text-base font-semibold" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -1,6 +1,6 @@
 import { useState, forwardRef } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/ds/Input";
 import { cn } from "@/lib/utils";
 
 export interface PasswordInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -24,6 +24,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
           className={cn(showToggle && "pr-12", className)}
           disabled={disabled}
           aria-invalid={!!error}
+          error={error}
           {...props}
         />
         {showToggle && (
