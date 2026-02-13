@@ -443,6 +443,7 @@ const Registro = () => {
                           }
                         }}
                         error={errors.data_nascimento?.message}
+                        className="!bg-[#ffffff]"
                       />
                     )}
                   />

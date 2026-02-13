@@ -26,9 +26,10 @@ interface DatePickerProps {
   setDate: (date: Date | undefined) => void
   label?: string
   error?: string
+  className?: string
 }
 
-export function DatePickerWithYear({ date, setDate, label, error }: DatePickerProps) {
+export function DatePickerWithYear({ date, setDate, label, error, className }: DatePickerProps) {
   const [month, setMonthState] = React.useState<Date>(date || new Date())
 
   const years = React.useMemo(() => {
@@ -65,11 +66,11 @@ export function DatePickerWithYear({ date, setDate, label, error }: DatePickerPr
 
   return (
     <div className="w-full">
-        {label && (
-          <label className="block text-sm font-medium text-foreground mb-1.5">
-            {label}
-          </label>
-        )}
+      {label && (
+        <label className="block text-sm font-medium text-foreground mb-1.5">
+          {label}
+        </label>
+      )}
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -78,7 +79,8 @@ export function DatePickerWithYear({ date, setDate, label, error }: DatePickerPr
               "flex h-11 w-full justify-start text-left font-normal rounded-lg border-input bg-card px-4 py-2",
               !date && "text-muted-foreground",
               error && "border-destructive focus:ring-destructive",
-              "hover:bg-background hover:text-foreground"
+              "hover:bg-background hover:text-foreground",
+              className
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
