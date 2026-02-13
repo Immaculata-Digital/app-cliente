@@ -93,7 +93,7 @@ export function DatePickerWithYear({ date, setDate, label, error, className }: D
               value={getMonth(month).toString()}
               onValueChange={handleMonthChange}
             >
-              <SelectTrigger className="w-[140px]">
+              <SelectTrigger className="w-[140px] !bg-[#ffffff]">
                 <SelectValue placeholder="Mês" />
               </SelectTrigger>
               <SelectContent>
@@ -108,7 +108,7 @@ export function DatePickerWithYear({ date, setDate, label, error, className }: D
               value={getYear(month).toString()}
               onValueChange={handleYearChange}
             >
-              <SelectTrigger className="w-[100px]">
+              <SelectTrigger className="w-[100px] !bg-[#ffffff]">
                 <SelectValue placeholder="Ano" />
               </SelectTrigger>
               <SelectContent className="max-h-[200px]">
