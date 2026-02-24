@@ -2,12 +2,14 @@ import { useEffect, useState, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { registroSchema, type RegistroFormData } from "@/schemas/registro.schema";
 import { clienteService } from "@/services/api-clientes/cliente.service";
 import { pontosRecompensasService } from "@/services/api-clientes/pontos-recompensas.service";
 import { lojaService } from "@/services/api-admin";
 import { PasswordInput } from "@/components/ds/PasswordInput";
+import { PhoneInput } from "@/components/ds/PhoneInput";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ds/Input";
 import { Label } from "@/components/ui/label";
@@ -38,6 +40,7 @@ const Registro = () => {
     setValue,
     watch,
     control,
+    trigger,
   } = useForm<RegistroFormData>({
     resolver: zodResolver(registroSchema),
     mode: "onChange",
@@ -220,12 +223,12 @@ const Registro = () => {
     buscarItens();
   }, []);
 
-  const formatWhatsApp = (value: string) => {
-    const numbers = value.replace(/\D/g, "");
-    if (numbers.length <= 2) return `+55${numbers}`;
-    if (numbers.length <= 4) return `+55${numbers.slice(2)}`;
-    return `+55${numbers.slice(2, 4)}${numbers.slice(4, 13)}`;
-  };
+  // Efeito para validação bidirecional das senhas
+  useEffect(() => {
+    if (senha && confirmarSenha) {
+      trigger("confirmar_senha");
+    }
+  }, [senha, confirmarSenha, trigger]);
 
   const formatCEP = (value: string) => {
     const numbers = value.replace(/\D/g, "");
@@ -365,7 +368,7 @@ const Registro = () => {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-x-6 gap-y-2 md:grid-cols-2">
                 <Input
                   label="Nome Completo"
                   {...register("nome_completo")}
@@ -383,17 +386,18 @@ const Registro = () => {
                   className="!bg-[#ffffff]"
                 />
 
-                <Input
-                  label="WhatsApp"
-                  type="tel"
-                  {...register("whatsapp")}
-                  error={errors.whatsapp?.message}
-                  placeholder="+55DDD000000000"
-                  className="!bg-[#ffffff]"
-                  onChange={(e) => {
-                    const formatted = formatWhatsApp(e.target.value);
-                    setValue("whatsapp", formatted, { shouldValidate: true });
-                  }}
+                <Controller
+                  name="whatsapp"
+                  control={control}
+                  render={({ field }) => (
+                    <PhoneInput
+                      label="WhatsApp"
+                      value={field.value}
+                      onChange={(val) => field.onChange(val)}
+                      error={errors.whatsapp?.message}
+                      inputClassName="!bg-[#ffffff]"
+                    />
+                  )}
                 />
 
                 <Input
@@ -409,21 +413,33 @@ const Registro = () => {
                   }}
                 />
 
-                <div className="space-y-2">
-                  <Label>Sexo</Label>
-                  <Select value={sexo} onValueChange={(value) => setValue("sexo", value as "M" | "F", { shouldValidate: true })}>
-                    <SelectTrigger className={errors.sexo ? "border-destructive !bg-[#ffffff]" : "!bg-[#ffffff]"}>
+                <div className="w-full">
+                  <Label className="block text-sm font-medium text-foreground mb-1.5 leading-none">Sexo</Label>
+                  <Select value={sexo} onValueChange={(value) => setValue("sexo", value as "M" | "F" | "O", { shouldValidate: true })}>
+                    <SelectTrigger className={cn("!bg-[#ffffff] transition-all duration-200", errors.sexo && "border-destructive/80 focus:ring-destructive/30 bg-destructive/5 text-destructive placeholder:text-destructive/60 pr-12")}>
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="M">Masculino</SelectItem>
                       <SelectItem value="F">Feminino</SelectItem>
+                      <SelectItem value="O">Prefiro não responder</SelectItem>
                     </SelectContent>
                   </Select>
-                  {errors.sexo && <p className="text-sm text-destructive">{errors.sexo.message}</p>}
+                  
+                  {errors.sexo && (
+                    <div className="pointer-events-none absolute right-10 top-[34px] text-destructive z-10">
+                      <AlertCircle className="h-5 w-5" />
+                    </div>
+                  )}
+
+                  <div className="min-h-[20px] mt-1 flex flex-col justify-start">
+                    {errors.sexo && (
+                      <p className="flex items-start gap-1.5 text-xs font-medium text-destructive animate-in fade-in leading-tight">{errors.sexo.message}</p>
+                    )}
+                  </div>
                 </div>
 
-                <div className="space-y-1">
+                <div className="w-full">
                   <Controller
                     name="data_nascimento"
                     control={control}
@@ -432,7 +448,7 @@ const Registro = () => {
                         label="Data de Nascimento"
                         date={field.value ? new Date(field.value) : undefined}
                         setDate={(date) => {
-                          if (date) {
+                          if (date && !isNaN(date.getTime())) {
                             // Ajustando o fuso horário para garantir que a data seja salva corretamente (evitando o dia anterior)
                             const year = date.getFullYear();
                             const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -443,51 +459,55 @@ const Registro = () => {
                           }
                         }}
                         error={errors.data_nascimento?.message}
-                        className="!bg-[#ffffff]"
                       />
                     )}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Senha</Label>
-                  <PasswordInput {...register("senha")} error={errors.senha?.message} placeholder="Digite sua senha" className="!bg-[#ffffff]" />
-                  {errors.senha && <p className="text-sm text-destructive">{errors.senha.message}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Confirmar Senha</Label>
-                  <PasswordInput
-                    {...register("confirmar_senha")}
-                    error={errors.confirmar_senha?.message}
-                    placeholder="Digite sua senha novamente"
-                    className="!bg-[#ffffff]"
-                  />
-                  {errors.confirmar_senha && <p className="text-sm text-destructive">{errors.confirmar_senha.message}</p>}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-muted/40 p-4">
-                <Checkbox
-                  id="aceite_termos"
-                  checked={aceiteTermos}
-                  onCheckedChange={(checked) => setValue("aceite_termos", checked as boolean)}
+                <PasswordInput 
+                  label="Senha" 
+                  {...register("senha")} 
+                  error={errors.senha?.message} 
+                  placeholder="Digite sua senha" 
+                  className="!bg-[#ffffff]" 
                 />
-                <Label
-                  htmlFor="aceite_termos"
-                  className="text-sm leading-relaxed peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Aceito a{" "}
-                  <button type="button" className="text-primary underline" onClick={abrirPoliticaPrivacidade}>
-                    política de privacidade
-                  </button>{" "}
-                  e os{" "}
-                  <button type="button" className="text-primary underline" onClick={abrirTermosUso}>
-                    termos de uso do clube de fidelidade
-                  </button>
-                </Label>
+
+                <PasswordInput
+                  label="Confirmar Senha"
+                  {...register("confirmar_senha")}
+                  error={errors.confirmar_senha?.message}
+                  placeholder="Digite sua senha novamente"
+                  className="!bg-[#ffffff]"
+                />
               </div>
-              {errors.aceite_termos && <p className="text-sm text-destructive">{errors.aceite_termos.message}</p>}
+
+              <div className="w-full pt-4">
+                <div className={cn("flex items-center gap-3 rounded-2xl border bg-muted/40 p-4 transition-colors", errors.aceite_termos ? "border-destructive/80 bg-destructive/5" : "border-border/60")}>
+                  <Checkbox
+                    id="aceite_termos"
+                    checked={aceiteTermos}
+                    onCheckedChange={(checked) => setValue("aceite_termos", checked as boolean)}
+                  />
+                  <Label
+                    htmlFor="aceite_termos"
+                    className="text-sm leading-relaxed peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Aceito a{" "}
+                    <button type="button" className="text-primary underline" onClick={abrirPoliticaPrivacidade}>
+                      política de privacidade
+                    </button>{" "}
+                    e os{" "}
+                    <button type="button" className="text-primary underline" onClick={abrirTermosUso}>
+                      termos de uso do clube de fidelidade
+                    </button>
+                  </Label>
+                </div>
+                <div className="min-h-[20px] mt-1 flex flex-col justify-start">
+                  {errors.aceite_termos && (
+                    <p className="flex items-start gap-1.5 text-xs font-medium text-destructive animate-in fade-in leading-tight">{errors.aceite_termos.message}</p>
+                  )}
+                </div>
+              </div>
 
               <Button type="submit" className="w-full text-base font-semibold" disabled={isSubmitting}>
                 {isSubmitting ? (

@@ -67,7 +67,7 @@ export function DatePickerWithYear({ date, setDate, label, error, className }: D
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-foreground mb-1.5">
+        <label className="block text-sm font-medium text-foreground mb-1.5 leading-none">
           {label}
         </label>
       )}
@@ -131,9 +131,13 @@ export function DatePickerWithYear({ date, setDate, label, error, className }: D
           />
         </PopoverContent>
       </Popover>
-      {error && (
-        <p className="mt-1.5 text-sm text-destructive">{error}</p>
-      )}
+      <div className="min-h-[20px] mt-1 flex flex-col justify-start">
+        {error ? (
+          <p className="flex items-start gap-1.5 text-xs font-medium text-destructive animate-in fade-in leading-tight">
+            {error}
+          </p>
+        ) : null}
+      </div>
     </div>
   )
 }
