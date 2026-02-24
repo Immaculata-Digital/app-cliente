@@ -12,7 +12,7 @@ export const registroSchema = z.object({
     .email("E-mail inválido")
     .max(255, "E-mail deve ter no máximo 255 caracteres"),
   
-  whatsapp: z.string()
+  whatsapp: z.string({ required_error: "WhatsApp é obrigatório" })
     .min(14, "WhatsApp inválido")
     .regex(/^\+55\d{2}\d{8,9}$/, "WhatsApp deve estar no formato +55DDNNNNNNNNN"),
   
@@ -20,11 +20,11 @@ export const registroSchema = z.object({
     .length(9, "CEP deve ter 8 dígitos")
     .regex(/^\d{5}-\d{3}$/, "CEP deve estar no formato 00000-000"),
   
-  sexo: z.enum(["M", "F"], {
+  sexo: z.enum(["M", "F", "O"], {
     errorMap: () => ({ message: "Selecione uma opção válida" })
   }),
   
-  data_nascimento: z.string()
+  data_nascimento: z.string({ required_error: "Data de nascimento é obrigatória" })
     .min(10, "Data de nascimento inválida")
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Data de nascimento deve estar no formato YYYY-MM-DD")
     .refine((val) => {

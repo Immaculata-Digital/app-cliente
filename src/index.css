@@ -108,31 +108,72 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
-  
-  .transition-fast { transition-duration: var(--transition-fast); }
-  .transition-normal { transition-duration: var(--transition-normal); }
-  .transition-slow { transition-duration: var(--transition-slow); }
+
+  .transition-fast {
+    transition-duration: var(--transition-fast);
+  }
+
+  .transition-normal {
+    transition-duration: var(--transition-normal);
+  }
+
+  .transition-slow {
+    transition-duration: var(--transition-slow);
+  }
 }
 
 @layer components {
+
   /* ResponsiveTable Components */
   .table-header-cell {
     @apply px-4 py-3 text-left font-medium text-sm text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm;
   }
+
   .table-header-sortable {
     @apply cursor-pointer hover:text-foreground transition-colors;
   }
-  .table-header-compact { @apply py-2; }
-  .table-cell { @apply px-4 py-4 text-sm text-left; }
-  .table-cell-compact { @apply py-2; }
+
+  .table-header-compact {
+    @apply py-2;
+  }
+
+  .table-cell {
+    @apply px-4 py-4 text-sm text-left;
+  }
+
+  .table-cell-compact {
+    @apply py-2;
+  }
+
   .table-row {
     @apply border-b last:border-b-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:bg-accent/50;
   }
-  .table-row-clickable { @apply cursor-pointer hover:bg-muted/50; }
-  .table-row-zebra { @apply bg-muted/20; }
-  .table-container { @apply border rounded-xl overflow-hidden; }
-  .table-container-inner { @apply overflow-x-auto; }
-  .table-base { @apply w-full; }
-  .table-thead { @apply bg-muted/50 border-b; }
-  .table-thead-sticky { @apply sticky top-0 z-10; }
+
+  .table-row-clickable {
+    @apply cursor-pointer hover:bg-muted/50;
+  }
+
+  .table-row-zebra {
+    @apply bg-muted/20;
+  }
+
+  .table-container {
+    @apply border rounded-xl overflow-hidden;
+  }
+
+  .table-container-inner {
+    @apply overflow-x-auto;
+  }
+
+  .table-base {
+    @apply w-full;
+  }
+
+  .table-thead {
+    @apply bg-muted/50 border-b;
+  }
+
+  .table-thead-sticky {
+    @apply sticky top-0 z-10;
+  }
 }

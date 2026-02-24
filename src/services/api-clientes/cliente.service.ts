@@ -30,7 +30,7 @@ export interface ClienteData {
   email: string;
   whatsapp: string;
   cep: string;
-  sexo: 'M' | 'F';
+  sexo: 'M' | 'F' | 'O';
   data_nascimento?: string | null;
   saldo: number;
   aceite_termos: boolean;
