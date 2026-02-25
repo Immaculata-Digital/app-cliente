@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DatePickerWithYear } from "@/components/ui/date-picker-with-year";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ds/SearchableSelect";
 import { useToast } from "@/hooks/use-toast";
 import { RecompensasCarousel } from "@/components/RecompensasCarousel";
 import type { PontosRecompensa } from "@/types/cliente-pontos-recompensas";
@@ -346,29 +347,18 @@ const Registro = () => {
               {(parseInt(searchParams.get("id_loja") || "0", 10) === 0 || lojas.length > 0) && (
                 <div className="space-y-2">
                   <Label htmlFor="loja">Loja *</Label>
-                  <Select
+                  <SearchableSelect
                     value={lojaSelecionada}
                     onValueChange={setLojaSelecionada}
                     disabled={loadingLojas}
-                    onOpenChange={(open) => {
-                      if (open) {
-                        document.body.classList.add('no-scroll-lock');
-                      } else {
-                        document.body.classList.remove('no-scroll-lock');
-                      }
-                    }}
-                  >
-                    <SelectTrigger className={(!lojaSelecionada && submitCount > 0) ? "border-destructive !bg-[#ffffff]" : "!bg-[#ffffff]"}>
-                      <SelectValue placeholder={loadingLojas ? "Carregando lojas..." : "Selecione uma loja"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {lojas.map((loja) => (
-                        <SelectItem key={loja.id_loja} value={loja.id_loja.toString()}>
-                          {loja.nome_loja_publico || loja.nome_loja}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    placeholder={loadingLojas ? "Carregando lojas..." : "Selecione uma loja"}
+                    emptyMessage="Nenhuma loja encontrada"
+                    options={lojas.map(loja => ({
+                      value: loja.id_loja.toString(),
+                      label: loja.nome_loja_publico || loja.nome_loja
+                    }))}
+                    className={(!lojaSelecionada && submitCount > 0) ? "border-destructive !bg-[#ffffff]" : "!bg-[#ffffff]"}
+                  />
                   {(!lojaSelecionada && submitCount > 0) && (
                     <p className="text-sm text-destructive">Por favor, selecione uma loja</p>
                   )}
