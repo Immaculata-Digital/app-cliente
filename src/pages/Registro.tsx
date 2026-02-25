@@ -239,15 +239,11 @@ const Registro = () => {
 
   const onSubmit = async (data: RegistroFormData) => {
     try {
-      const idLojaParam = searchParams.get("id_loja");
-      if (!idLojaParam) {
-        throw new Error("ID da loja não encontrado");
-      }
-
-      const idLojaNumero = parseInt(idLojaParam, 10);
       let idLojaFinal: number;
+      const idLojaParam = searchParams.get("id_loja");
+      const idLojaNumero = idLojaParam ? parseInt(idLojaParam, 10) : 0;
 
-      // Se id_loja for 0 OU se tem lojas carregadas (significa que precisa selecionar), usar o id_loja selecionado na combo
+      // Se id_loja for 0 (ausente ou explicitamente 0) OU se tem lojas carregadas (significa que precisa selecionar), usar o id_loja selecionado na combo
       if (idLojaNumero === 0 || lojas.length > 0) {
         if (!lojaSelecionada) {
           toast({
