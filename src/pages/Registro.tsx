@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DatePickerWithYear } from "@/components/ui/date-picker-with-year";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ds/SearchableSelect";
 import { useToast } from "@/hooks/use-toast";
 import { RecompensasCarousel } from "@/components/RecompensasCarousel";
 import type { PontosRecompensa } from "@/types/cliente-pontos-recompensas";
@@ -238,15 +239,11 @@ const Registro = () => {
 
   const onSubmit = async (data: RegistroFormData) => {
     try {
-      const idLojaParam = searchParams.get("id_loja");
-      if (!idLojaParam) {
-        throw new Error("ID da loja não encontrado");
-      }
-
-      const idLojaNumero = parseInt(idLojaParam, 10);
       let idLojaFinal: number;
+      const idLojaParam = searchParams.get("id_loja");
+      const idLojaNumero = idLojaParam ? parseInt(idLojaParam, 10) : 0;
 
-      // Se id_loja for 0 OU se tem lojas carregadas (significa que precisa selecionar), usar o id_loja selecionado na combo
+      // Se id_loja for 0 (ausente ou explicitamente 0) OU se tem lojas carregadas (significa que precisa selecionar), usar o id_loja selecionado na combo
       if (idLojaNumero === 0 || lojas.length > 0) {
         if (!lojaSelecionada) {
           toast({
@@ -346,22 +343,18 @@ const Registro = () => {
               {(parseInt(searchParams.get("id_loja") || "0", 10) === 0 || lojas.length > 0) && (
                 <div className="space-y-2">
                   <Label htmlFor="loja">Loja *</Label>
-                  <Select
+                  <SearchableSelect
                     value={lojaSelecionada}
                     onValueChange={setLojaSelecionada}
                     disabled={loadingLojas}
-                  >
-                    <SelectTrigger className={(!lojaSelecionada && submitCount > 0) ? "border-destructive !bg-[#ffffff]" : "!bg-[#ffffff]"}>
-                      <SelectValue placeholder={loadingLojas ? "Carregando lojas..." : "Selecione uma loja"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {lojas.map((loja) => (
-                        <SelectItem key={loja.id_loja} value={loja.id_loja.toString()}>
-                          {loja.nome_loja_publico || loja.nome_loja}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    placeholder={loadingLojas ? "Carregando lojas..." : "Selecione uma loja"}
+                    emptyMessage="Nenhuma loja encontrada"
+                    options={lojas.map(loja => ({
+                      value: loja.id_loja.toString(),
+                      label: loja.nome_loja_publico || loja.nome_loja
+                    }))}
+                    className={(!lojaSelecionada && submitCount > 0) ? "border-destructive !bg-[#ffffff]" : "!bg-[#ffffff]"}
+                  />
                   {(!lojaSelecionada && submitCount > 0) && (
                     <p className="text-sm text-destructive">Por favor, selecione uma loja</p>
                   )}
@@ -415,7 +408,17 @@ const Registro = () => {
 
                 <div className="w-full">
                   <Label className="block text-sm font-medium text-foreground mb-1.5 leading-none">Sexo</Label>
-                  <Select value={sexo} onValueChange={(value) => setValue("sexo", value as "M" | "F" | "O", { shouldValidate: true })}>
+                  <Select 
+                    value={sexo} 
+                    onValueChange={(value) => setValue("sexo", value as "M" | "F" | "O", { shouldValidate: true })}
+                    onOpenChange={(open) => {
+                      if (open) {
+                        document.body.classList.add('no-scroll-lock');
+                      } else {
+                        document.body.classList.remove('no-scroll-lock');
+                      }
+                    }}
+                  >
                     <SelectTrigger className={cn("!bg-[#ffffff] transition-all duration-200", errors.sexo && "border-destructive/80 focus:ring-destructive/30 bg-destructive/5 text-destructive placeholder:text-destructive/60 pr-12")}>
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
