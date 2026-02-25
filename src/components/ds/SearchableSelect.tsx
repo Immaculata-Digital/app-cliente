@@ -73,7 +73,10 @@ export function SearchableSelect({
       <PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] p-0">
         <Command
           filter={(value, search) => {
-            if (value.toLowerCase().includes(search.toLowerCase())) return 1
+            const normalizeStr = (str: string) => 
+              str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+              
+            if (normalizeStr(value).includes(normalizeStr(search))) return 1
             return 0
           }}
         >
