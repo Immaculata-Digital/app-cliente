@@ -120,6 +120,13 @@
   .transition-slow {
     transition-duration: var(--transition-slow);
   }
+
+  /* Override Radix UI scroll lock for specific dropdowns (like Selects in forms) */
+  body.no-scroll-lock {
+    overflow: auto !important;
+    pointer-events: auto !important;
+    padding-right: 0 !important;
+  }
 }
 
 @layer components {

@@ -350,6 +350,13 @@ const Registro = () => {
                     value={lojaSelecionada}
                     onValueChange={setLojaSelecionada}
                     disabled={loadingLojas}
+                    onOpenChange={(open) => {
+                      if (open) {
+                        document.body.classList.add('no-scroll-lock');
+                      } else {
+                        document.body.classList.remove('no-scroll-lock');
+                      }
+                    }}
                   >
                     <SelectTrigger className={(!lojaSelecionada && submitCount > 0) ? "border-destructive !bg-[#ffffff]" : "!bg-[#ffffff]"}>
                       <SelectValue placeholder={loadingLojas ? "Carregando lojas..." : "Selecione uma loja"} />
@@ -415,7 +422,17 @@ const Registro = () => {
 
                 <div className="w-full">
                   <Label className="block text-sm font-medium text-foreground mb-1.5 leading-none">Sexo</Label>
-                  <Select value={sexo} onValueChange={(value) => setValue("sexo", value as "M" | "F" | "O", { shouldValidate: true })}>
+                  <Select 
+                    value={sexo} 
+                    onValueChange={(value) => setValue("sexo", value as "M" | "F" | "O", { shouldValidate: true })}
+                    onOpenChange={(open) => {
+                      if (open) {
+                        document.body.classList.add('no-scroll-lock');
+                      } else {
+                        document.body.classList.remove('no-scroll-lock');
+                      }
+                    }}
+                  >
                     <SelectTrigger className={cn("!bg-[#ffffff] transition-all duration-200", errors.sexo && "border-destructive/80 focus:ring-destructive/30 bg-destructive/5 text-destructive placeholder:text-destructive/60 pr-12")}>
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
