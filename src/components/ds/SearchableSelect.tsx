@@ -71,7 +71,12 @@ export function SearchableSelect({
         The PopoverContent allows rendering a scrollable list inside it.
       */}
       <PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] p-0">
-        <Command>
+        <Command
+          filter={(value, search) => {
+            if (value.toLowerCase().includes(search.toLowerCase())) return 1
+            return 0
+          }}
+        >
           <CommandInput placeholder="Pesquisar..." className="h-11" />
           <CommandList className="max-h-60 overflow-y-auto overflow-x-hidden">
             <CommandEmpty>{emptyMessage}</CommandEmpty>
