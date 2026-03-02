@@ -18,6 +18,7 @@ import type { PontosRecompensa } from "@/types/cliente-pontos-recompensas";
 import type { CreateMovimentacaoRequest, ResgateResponse } from "@/types/cliente-pontos-movimentacao";
 import type { ClienteData } from "@/services/api-clientes/cliente.service";
 import { getSchemaFromHostname } from "@/utils/schema.utils";
+import { parseYYYYMMDDToLocalDate, formatLocalDateToYYYYMMDD } from "@/utils/date.utils";
 
 type ModalType = "codigo" | "confirmar-resgate" | null;
 type ModalContext = "resgate" | "somar-pontos";
@@ -352,20 +353,13 @@ const ClientArea = () => {
       }
 
       // Comparar data de nascimento
-      // Assumindo que clienteData.data_nascimento vem como YYYY-MM-DD ou DD/MM/YYYY
-      // Vamos normalizar para YYYY-MM-DD para comparar, ou comparar strings se formato for igual
-      // O input type="date" retorna YYYY-MM-DD
-      let dataNascimentoCadastro = clienteData.data_nascimento;
-      if (dataNascimentoCadastro && dataNascimentoCadastro.includes('/')) {
-        // Se estiver em DD/MM/YYYY converter para YYYY-MM-DD
-        const [dia, mes, ano] = dataNascimentoCadastro.split('/');
-        dataNascimentoCadastro = `${ano}-${mes}-${dia}`;
-      }
-
-      // Se a data de nascimento no banco for null, não validamos ou exigimos que o usuário saiba?
-      // O requisito diz "3 dados ... batendo com o da base".
-      if (dataNascimentoCadastro && dadosConfirmacao.dataNascimento !== dataNascimentoCadastro.split('T')[0]) {
-        throw new Error("A data de nascimento informada não confere com o cadastro.");
+      if (clienteData.data_nascimento && dadosConfirmacao.dataNascimento) {
+        const dataInput = parseYYYYMMDDToLocalDate(dadosConfirmacao.dataNascimento);
+        const dataCadastro = parseYYYYMMDDToLocalDate(clienteData.data_nascimento.split('T')[0]);
+        
+        if (dataInput && dataCadastro && dataInput.getTime() !== dataCadastro.getTime()) {
+          throw new Error("A data de nascimento informada não confere com o cadastro.");
+        }
       }
 
       // Chamar API de exclusão (motivo não é persistido no backend atualmente)

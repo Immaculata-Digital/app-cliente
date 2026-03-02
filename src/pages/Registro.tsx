@@ -22,6 +22,7 @@ import { RecompensasCarousel } from "@/components/RecompensasCarousel";
 import type { PontosRecompensa } from "@/types/cliente-pontos-recompensas";
 import { useConfiguracoesGlobais } from "@/contexts/ConfiguracoesGlobaisContext";
 import { getSchemaFromHostname } from "@/utils/schema.utils";
+import { parseYYYYMMDDToLocalDate, formatLocalDateToYYYYMMDD } from "@/utils/date.utils";
 import type { Loja } from "@/services/api-admin/loja.service";
 
 const Registro = () => {
@@ -449,17 +450,9 @@ const Registro = () => {
                     render={({ field }) => (
                       <DatePickerWithYear
                         label="Data de Nascimento"
-                        date={field.value ? new Date(field.value) : undefined}
+                        date={parseYYYYMMDDToLocalDate(field.value)}
                         setDate={(date) => {
-                          if (date && !isNaN(date.getTime())) {
-                            // Ajustando o fuso horário para garantir que a data seja salva corretamente (evitando o dia anterior)
-                            const year = date.getFullYear();
-                            const month = String(date.getMonth() + 1).padStart(2, '0');
-                            const day = String(date.getDate()).padStart(2, '0');
-                            field.onChange(`${year}-${month}-${day}`);
-                          } else {
-                            field.onChange("");
-                          }
+                          field.onChange(formatLocalDateToYYYYMMDD(date));
                         }}
                         error={errors.data_nascimento?.message}
                       />
