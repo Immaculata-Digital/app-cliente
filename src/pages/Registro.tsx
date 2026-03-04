@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ds/Input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DatePickerWithYear } from "@/components/ui/date-picker-with-year";
+import { DateInput } from "@/components/ds/DateInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SearchableSelect } from "@/components/ds/SearchableSelect";
 import { useToast } from "@/hooks/use-toast";
@@ -22,7 +22,6 @@ import { RecompensasCarousel } from "@/components/RecompensasCarousel";
 import type { PontosRecompensa } from "@/types/cliente-pontos-recompensas";
 import { useConfiguracoesGlobais } from "@/contexts/ConfiguracoesGlobaisContext";
 import { getSchemaFromHostname } from "@/utils/schema.utils";
-import { parseYYYYMMDDToLocalDate, formatLocalDateToYYYYMMDD } from "@/utils/date.utils";
 import type { Loja } from "@/services/api-admin/loja.service";
 
 const Registro = () => {
@@ -43,6 +42,8 @@ const Registro = () => {
     watch,
     control,
     trigger,
+    setError,
+    clearErrors,
   } = useForm<RegistroFormData>({
     resolver: zodResolver(registroSchema),
     mode: "onChange",
@@ -238,6 +239,26 @@ const Registro = () => {
     return `${numbers.slice(0, 5)}-${numbers.slice(5, 8)}`;
   };
 
+  const buscarCEPLocalidade = async (cep: string) => {
+    const limpo = cep.replace(/\D/g, "");
+    if (limpo.length !== 8) return;
+
+    try {
+      const response = await fetch(`https://brasilapi.com.br/api/cep/v1/${limpo}`);
+      if (!response.ok) {
+        throw new Error("CEP não encontrado");
+      }
+      const data = await response.json();
+      clearErrors("cep");
+      toast({
+        title: "Endereço verificado",
+        description: `${data.street || data.address}, ${data.neighborhood} - ${data.city}/${data.state}`,
+      });
+    } catch (error) {
+      setError("cep", { type: "manual", message: "CEP não encontrado ou inválido" });
+    }
+  };
+
   const onSubmit = async (data: RegistroFormData) => {
     try {
       let idLojaFinal: number;
@@ -404,6 +425,9 @@ const Registro = () => {
                   onChange={(e) => {
                     const formatted = formatCEP(e.target.value);
                     setValue("cep", formatted, { shouldValidate: true });
+                    if (formatted.length === 9) {
+                      buscarCEPLocalidade(formatted);
+                    }
                   }}
                 />
 
@@ -448,12 +472,10 @@ const Registro = () => {
                     name="data_nascimento"
                     control={control}
                     render={({ field }) => (
-                      <DatePickerWithYear
+                      <DateInput
                         label="Data de Nascimento"
-                        date={parseYYYYMMDDToLocalDate(field.value)}
-                        setDate={(date) => {
-                          field.onChange(formatLocalDateToYYYYMMDD(date));
-                        }}
+                        value={field.value}
+                        onChange={field.onChange}
                         error={errors.data_nascimento?.message}
                       />
                     )}

@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { DateInput } from "@/components/ds/DateInput";
 import { useConfiguracoesGlobais } from "@/contexts/ConfiguracoesGlobaisContext";
 import QRCodeComponent from "react-qr-code";
 import { usePontosRecompensas } from "@/hooks/usePontosRecompensas";
@@ -727,13 +728,11 @@ const ClientArea = () => {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="nascimento">Data de Nascimento</Label>
-              <Input
-                id="nascimento"
-                type="date"
+              <DateInput
+                label="Data de Nascimento"
                 value={dadosConfirmacao.dataNascimento}
-                onChange={(e) =>
-                  setDadosConfirmacao({ ...dadosConfirmacao, dataNascimento: e.target.value })
+                onChange={(val) =>
+                  setDadosConfirmacao({ ...dadosConfirmacao, dataNascimento: val })
                 }
               />
             </div>
