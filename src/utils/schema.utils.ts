@@ -86,3 +86,17 @@ export function isDevMode(): boolean {
     hostname === '127.0.0.1'
   );
 }
+
+/**
+ * Retorna o nome de exibição amigável para o schema
+ */
+export function getSchemaDisplayName(): string {
+  const schema = getSchemaFromHostname();
+  
+  if (schema.toLowerCase() === 'casona') {
+    return 'Casona Açaí';
+  }
+  
+  // Capitaliza o nome do schema por padrão
+  return schema.charAt(0).toUpperCase() + schema.slice(1);
+}

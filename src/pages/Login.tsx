@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { PasswordInput } from "@/components/ds/PasswordInput";
 import { cn } from "@/lib/utils";
-import { getSchemaFromHostname } from "@/utils/schema.utils";
+import { getSchemaFromHostname, getSchemaDisplayName } from "@/utils/schema.utils";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -25,8 +25,7 @@ const Login = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Obter nome do cliente a partir do schema
-  const schema = getSchemaFromHostname();
-  const nomeCliente = schema.charAt(0).toUpperCase() + schema.slice(1);
+  const nomeCliente = getSchemaDisplayName();
 
   // Debug: verificar configurações
   useEffect(() => {
